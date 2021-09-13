@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/jessevdk/go-flags"
 	"github.com/joho/godotenv"
 	"github.com/namrahov/gross-to-net/config"
+	"github.com/namrahov/ms-ecourt-go/repo"
 	log "github.com/sirupsen/logrus"
+	"net/http"
 )
 
 var opts struct {
@@ -24,6 +27,14 @@ func main() {
 	applyLogLevel()
 
 	repo.InitDb()
+
+	router := mux.NewRouter()
+	handler.HandleHealthRequest(router)
+	handler.DeliveryHandler(router)
+	runSchedulers()
+
+	log.Info("Starting server at port: ", config.Props.Port)
+	log.Fatal(http.ListenAndServe(":"+config.Props.Port, router))
 
 	fmt.Println("salam")
 }
