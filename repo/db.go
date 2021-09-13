@@ -1,7 +1,8 @@
 package repo
 
 import (
-	"github.com/ms-ecourt-go/config"
+	"github.com/go-pg/pg"
+	"github.com/namrahov/ms-ecourt-go/config"
 	"time"
 )
 
