@@ -5,8 +5,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jessevdk/go-flags"
 	"github.com/joho/godotenv"
-	"github.com/ms-ecourt-go/handler"
-	"github.com/namrahov/gross-to-net/config"
+	"github.com/namrahov/ms-ecourt-go/config"
+	"github.com/namrahov/ms-ecourt-go/handler"
+
 	"github.com/namrahov/ms-ecourt-go/repo"
 	log "github.com/sirupsen/logrus"
 	"net/http"
