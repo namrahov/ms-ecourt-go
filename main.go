@@ -32,7 +32,7 @@ func main() {
 
 	router := mux.NewRouter()
 	handler.HandleHealthRequest(router)
-	handler.DeliveryHandler(router)
+	handler.ApplicationHandler(router)
 
 	log.Info("Starting server at port: ", config.Props.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Props.Port, router))
