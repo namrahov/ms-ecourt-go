@@ -25,9 +25,9 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int) (*mo
 		page = 1
 	}
 
-	//offset := (page - 1) * count
+	offset := (page - 1) * count
 
-	applications, err := s.Repo.GetApplications(1, 3)
+	applications, err := s.Repo.GetApplications(offset, count)
 	if err != nil {
 		logger.Errorf("ActionLog.GetApplications.error: cannot get applications %v", err)
 		return nil, errors.New(fmt.Sprintf("%s.can't-get-applications", model.Exception))

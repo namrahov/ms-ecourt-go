@@ -12,8 +12,8 @@ func (r ApplicationRepo) GetApplications(offset int, count int) ([]*model.Applic
 	var applications []*model.ApplicationResponse
 
 	err := Db.Model(&applications).
-		//Limit(offset).
-		//Offset(count).
+		Limit(count).
+		Offset(offset).
 		Select()
 
 	//"limit {OFFSET}, {PAGE_SIZE}";
