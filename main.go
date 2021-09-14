@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jessevdk/go-flags"
 	"github.com/joho/godotenv"
@@ -28,6 +27,13 @@ func main() {
 	config.LoadConfig()
 	applyLogLevel()
 
+	log.Info("Application is starting with profile: ", opts.Profile)
+
+	err = repo.MigrateDb()
+	if err != nil {
+		panic(err)
+	}
+
 	repo.InitDb()
 
 	router := mux.NewRouter()
@@ -36,8 +42,6 @@ func main() {
 
 	log.Info("Starting server at port: ", config.Props.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Props.Port, router))
-
-	fmt.Println("salam")
 }
 
 func initLogger() {

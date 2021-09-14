@@ -10,30 +10,60 @@ import (
 )
 
 type IService interface {
-	GetApplications(ctx context.Context, page int64, count int64) (*model.PageableApplicationDto, error)
+	GetApplications(ctx context.Context, page int, count int) (*model.PageableApplicationDto, error)
 }
 
 type Service struct {
 	Repo repo.IApplicationRepo
 }
 
-func (s *Service) GetApplications(ctx context.Context, page int64, count int64) (*model.PageableApplicationDto, error) {
+func (s *Service) GetApplications(ctx context.Context, page int, count int) (*model.PageableApplicationDto, error) {
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
-	logger.Info("GetApplications.GetDeliveryByOrderId.start")
+	logger.Info("GetApplications.GetApplications.start")
 
-	applications, err := s.Repo.GetApplications(page, count)
+	if page < 1 {
+		page = 1
+	}
+
+	//offset := (page - 1) * count
+
+	applications, err := s.Repo.GetApplications(1, 3)
 	if err != nil {
-		logger.Errorf("ActionLog.GetApplications.error: cannot get delivery details for order %v", err)
-		return nil, errors.New(fmt.Sprintf("%s.can't-get-delivery", model.Exception))
+		logger.Errorf("ActionLog.GetApplications.error: cannot get applications %v", err)
+		return nil, errors.New(fmt.Sprintf("%s.can't-get-applications", model.Exception))
 	}
 
 	pageableApplicationDto := model.PageableApplicationDto{
-		List: *applications,
+		List: applications,
 	}
 
 	/*parsed, _ := time.Parse("2006-01-02 15:04:05", delivery.DeliveryDate)
 	delivery.DeliveryDate = parsed.Format(time.RFC3339)*/
 
-	logger.Info("ActionLog.GetDeliveryByOrderId.success")
+	logger.Info("ActionLog.GetApplications.success")
 	return &pageableApplicationDto, nil
 }
+
+//pageSize -> count
+// page -> page
+
+/*
+   @Override
+    public List<Candidate> getCandidateList(int page) {
+        if(page < 1) {
+            page = 1;
+        }
+        int offset = (page - 1) * pageSize;
+        return candidateRepository.getCandidateList(offset, pageSize);
+    }
+
+    @Override
+    public long getCandidatePageCount() {
+        long candidateCount = candidateRepository.getCandidateCount();
+        long pageCount = candidateCount/pageSize;
+        if(candidateCount % pageSize > 0) {
+            pageCount++;
+        }
+        return pageCount;
+    }
+*/

@@ -1,10 +1,12 @@
 package model
 
 type PageableApplicationDto struct {
-	List []ApplicationResponse `json:"list"`
+	List []*ApplicationResponse `json:"list"`
 }
 
 type ApplicationResponse struct {
+	tableName struct{} `sql:"application" pg:",discard_unknown_columns"`
+
 	Id             int64         `sql:"id"  json:"id"`
 	RequestId      int64         `sql:"request_id" json:"requestId"`
 	CheckedId      int64         `sql:"checked_id" json:"checkedId"`
@@ -18,11 +20,9 @@ type ApplicationResponse struct {
 	Note           string        `sql:"note" json:"note"`
 	Status         Status        `sql:"status" json:"status"`
 	Deadline       string        `sql:"deadline" json:"deadline"`
-	RemainingDay   int64         `sql:"remaining_day" json:"remainingDay"`
 	AssigneeId     int64         `sql:"assignee_id" json:"assigneeId"`
 	Priority       Priority      `sql:"priority" json:"priority"`
 	AssigneeName   string        `sql:"assignee_name" json:"assigneeName"`
-	ResponseDate   string        `sql:"response_date" json:"responseDate"`
 	Comments       []CommentDto  `sql:"-" json:"comments"`
 	Documents      []DocumentDto `sql:"-" json:"documents"`
 	BeginDate      string        `sql:"begin_date" json:"beginDate"`

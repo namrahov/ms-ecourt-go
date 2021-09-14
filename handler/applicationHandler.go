@@ -29,7 +29,7 @@ func ApplicationHandler(router *mux.Router) *mux.Router {
 		},
 	}
 
-	router.HandleFunc(config.InternalRootPath, h.getApplications).Methods("GET")
+	router.HandleFunc(config.RootPath+"/applications", h.getApplications).Methods("GET")
 
 	return router
 
@@ -37,8 +37,8 @@ func ApplicationHandler(router *mux.Router) *mux.Router {
 
 func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Request) {
 
-	page, err := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
-	count, err := strconv.ParseInt(r.URL.Query().Get("count"), 10, 64)
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	count, err := strconv.Atoi(r.URL.Query().Get("count"))
 
 	if err != nil {
 		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)

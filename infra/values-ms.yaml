@@ -1,0 +1,10 @@
+# Microservice name. Used to create service name and application name
+serviceName: ms-ecourt
+
+vault:
+  enabled: true
+
+prometheus:
+  scrape: true
+  path: /metrics
+  port: 80
