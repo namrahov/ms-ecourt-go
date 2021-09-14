@@ -31,3 +31,5 @@ const (
 	Sheet                       = "Sheet1"
 	AttachmentFilename          = "attachment; filename=loan_risks_report.xlsx"
 )
+
+const Exception = "error.ecourt"

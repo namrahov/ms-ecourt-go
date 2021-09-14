@@ -7,7 +7,6 @@ import (
 	"github.com/namrahov/ms-ecourt-go/model"
 	"github.com/namrahov/ms-ecourt-go/repo"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
 
 type IService interface {
@@ -24,12 +23,12 @@ func (s *Service) GetApplications(ctx context.Context, page int64, count int64) 
 
 	applications, err := s.Repo.GetApplications(page, count)
 	if err != nil {
-		logger.Errorf("ActionLog.GetApplications.error: cannot get delivery details for order %d, %v", orderId, err)
+		logger.Errorf("ActionLog.GetApplications.error: cannot get delivery details for order %v", err)
 		return nil, errors.New(fmt.Sprintf("%s.can't-get-delivery", model.Exception))
 	}
 
 	pageableApplicationDto := model.PageableApplicationDto{
-		List: applications,
+		List: *applications,
 	}
 
 	/*parsed, _ := time.Parse("2006-01-02 15:04:05", delivery.DeliveryDate)
