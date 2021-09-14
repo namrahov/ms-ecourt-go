@@ -1,16 +1,16 @@
 package model
 
-/*
-data class CommentDto(
-        var id: Long?,
-        var commentator: String,
-        var description: String?,
-        var commentType: CommentType,
-
-        @JsonFormat(pattern = "yyyy.MM.dd HH:mm")
-        var createdAt: LocalDateTime? = null
-)
-*/
-
 type CommentDto struct {
+	Id          int64       `json:"id"`
+	Commentator string      `json:"commentator"`
+	Description string      `json:"description"`
+	CommentType CommentType `json:"commentType"`
+	CreatedAt   string      `json:"createdAt"`
 }
+
+type CommentType string
+
+const (
+	Internal CommentType = "INTERNAL"
+	External             = "EXTERNAL"
+)

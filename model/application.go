@@ -53,3 +53,9 @@ const (
 	Standard Priority = "STANDARD"
 	High              = "HIGH"
 )
+
+type BankDetail struct {
+	CustomerNo   string `sql:"customer_no" json:"customerNo"`
+	CustomerName string `sql:"customer_name" json:"customerName"`
+	RequestDate  string `sql:"request_date" json:"requestDate"`
+}
