@@ -21,11 +21,7 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int) (*mo
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
 	logger.Info("GetApplications.GetApplications.start")
 
-	if page < 1 {
-		page = 1
-	}
-
-	offset := (page - 1) * count
+	offset := page * count
 
 	applications, err := s.Repo.GetApplications(offset, count)
 	if err != nil {
@@ -33,10 +29,23 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int) (*mo
 		return nil, errors.New(fmt.Sprintf("%s.can't-get-applications", model.Exception))
 	}
 
-	//totalCount
+	totalCount, err := s.Repo.GetTotalCount()
+
+	lastPageNumber := totalCount / count
+
+	var hasNextPage bool
+	check := (totalCount - (page * count)) / count
+	if check > 0 {
+		hasNextPage = true
+	} else {
+		hasNextPage = false
+	}
 
 	pageableApplicationDto := model.PageableApplicationDto{
-		List: applications,
+		List:           applications,
+		HasNextPage:    hasNextPage,
+		LastPageNumber: lastPageNumber,
+		TotalCount:     totalCount,
 	}
 
 	/*parsed, _ := time.Parse("2006-01-02 15:04:05", delivery.DeliveryDate)

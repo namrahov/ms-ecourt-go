@@ -1,8 +1,10 @@
 package model
 
 type PageableApplicationDto struct {
-	List       []*ApplicationResponse `json:"list"`
-	TotalCount int64                  `json:"totalCount"`
+	List           []*ApplicationResponse `json:"list"`
+	HasNextPage    bool                   `json:"hasNextPage"`
+	LastPageNumber int                    `json:"lastPageNumber"`
+	TotalCount     int                    `json:"totalCount"`
 }
 
 type ApplicationResponse struct {
