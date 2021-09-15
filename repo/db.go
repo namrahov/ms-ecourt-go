@@ -2,18 +2,15 @@ package repo
 
 import (
 	"database/sql"
-	"github.com/go-pg/pg"
-	_ "github.com/lib/pq"
+	"fmt"
 	"github.com/namrahov/ms-ecourt-go/config"
-	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
-	"time"
+
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-var Db *pg.DB
-
 func InitDb() {
-	Db = pg.Connect(&pg.Options{
+	/*Db = pg.Connect(&pg.Options{
 		Addr:        config.Props.DbHost + ":" + config.Props.DbPort,
 		User:        config.Props.DbUser,
 		Password:    config.Props.DbPass,
@@ -22,30 +19,38 @@ func InitDb() {
 		DialTimeout: 1 * time.Minute,
 		MaxRetries:  2,
 		MaxConnAge:  15 * time.Minute,
-	})
-}
+	})*/
 
-func MigrateDb() error {
-	log.Info("MigrateDb.start")
-
-	connStr := "dbname=" + config.Props.DbName + " user=" + config.Props.DbUser + " password=" + config.Props.DbPass + " host=" + config.Props.DbHost + " port=" + config.Props.DbPort + "  sslmode=disable"
-
-	db, err := sql.Open("postgres", connStr)
+	// connect to a database
+	conn, err := sql.Open("pgx",
+		fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s",
+			config.Props.DbHost, config.Props.DbPort, config.Props.DbName, config.Props.DbUser, config.Props.DbPass))
 	if err != nil {
-		return err
+		log.Fatal(fmt.Sprintf("Unable to connect: %v\n", err))
 	}
-	defer db.Close()
+	defer conn.Close()
 
-	migrations := &migrate.FileMigrationSource{
-		Dir: "migrations",
-	}
+	log.Println("Connected to database!")
 
-	n, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
+	// test my connection
+	err = conn.Ping()
 	if err != nil {
-		return err
+		log.Fatal("Cannot ping database!")
 	}
 
-	log.Info("Applied ", n, " migrations")
-	log.Info("MigrateDb.end")
-	return nil
+	log.Println("Pinged database!")
+
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Unable to connect %v\n", err))
+	}
+	defer conn.Close()
+
+	log.Println("Connected to db")
+
+	err = conn.Ping()
+	if err != nil {
+		log.Fatal("Can not ping database")
+	}
+	fmt.Println("Pinged database!")
+
 }

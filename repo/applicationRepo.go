@@ -1,8 +1,12 @@
 package repo
 
 import (
+	"database/sql"
 	"github.com/namrahov/ms-ecourt-go/model"
+	log "github.com/sirupsen/logrus"
 )
+
+var conn *sql.DB
 
 type IApplicationRepo interface {
 	GetApplications(offset int, count int) ([]*model.ApplicationResponse, error)
@@ -22,10 +26,16 @@ func (r ApplicationRepo) GetApplications(offset int, count int) ([]*model.Applic
       SELECT a.id, a.court_name, c.id, c.description
       FROM application a
       JOIN comment c on a.id = c.application.id
-      where a.id = ?
+      where a.id = $1
     `
 
-	rows, err := Db.Query(query, 4)
+	rows, err := conn.Query(query, 4)
+	defer rows.Close()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
 	application := &model.ApplicationResponse{}
 
 	for rows.Next() {

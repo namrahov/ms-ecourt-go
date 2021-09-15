@@ -29,11 +29,6 @@ func main() {
 
 	log.Info("Application is starting with profile: ", opts.Profile)
 
-	err = repo.MigrateDb()
-	if err != nil {
-		panic(err)
-	}
-
 	repo.InitDb()
 
 	router := mux.NewRouter()

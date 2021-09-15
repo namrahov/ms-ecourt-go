@@ -9,6 +9,7 @@ require (
 	github.com/go-pg/pg v8.0.7+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
+	github.com/jackc/pgx/v4 v4.13.0 // indirect
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/joho/godotenv v1.3.0
