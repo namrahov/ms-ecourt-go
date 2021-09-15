@@ -54,27 +54,3 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int, appl
 	logger.Info("ActionLog.GetApplications.success")
 	return &pageableApplicationDto, nil
 }
-
-//pageSize -> count
-// page -> page
-
-/*
-   @Override
-    public List<Candidate> getCandidateList(int page) {
-        if(page < 1) {
-            page = 1;
-        }
-        int offset = (page - 1) * pageSize;
-        return candidateRepository.getCandidateList(offset, pageSize);
-    }
-
-    @Override
-    public long getCandidatePageCount() {
-        long candidateCount = candidateRepository.getCandidateCount();
-        long pageCount = candidateCount/pageSize;
-        if(candidateCount % pageSize > 0) {
-            pageCount++;
-        }
-        return pageCount;
-    }
-*/
