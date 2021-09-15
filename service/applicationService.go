@@ -33,6 +33,8 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int) (*mo
 		return nil, errors.New(fmt.Sprintf("%s.can't-get-applications", model.Exception))
 	}
 
+	//totalCount
+
 	pageableApplicationDto := model.PageableApplicationDto{
 		List: applications,
 	}

@@ -1,7 +1,8 @@
 package model
 
 type PageableApplicationDto struct {
-	List []*ApplicationResponse `json:"list"`
+	List       []*ApplicationResponse `json:"list"`
+	TotalCount int64                  `json:"totalCount"`
 }
 
 type ApplicationResponse struct {
