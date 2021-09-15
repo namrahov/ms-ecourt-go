@@ -23,7 +23,7 @@ type Application struct {
 	Note           string        `sql:"note" json:"note"`
 	Status         Status        `sql:"status" json:"status"`
 	Deadline       string        `sql:"deadline" json:"deadline"`
-	AssigneeId     int64         `sql:"assignee_id" json:"assigneeId"`
+	AssigneeId     *int64        `sql:"assignee_id" json:"assigneeId"`
 	Priority       Priority      `sql:"priority" json:"priority"`
 	AssigneeName   string        `sql:"assignee_name" json:"assigneeName"`
 	Comments       []*Comment    `sql:"-" json:"comments"`

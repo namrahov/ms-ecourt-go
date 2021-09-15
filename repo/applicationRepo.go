@@ -16,7 +16,10 @@ type ApplicationRepo struct {
 func (r ApplicationRepo) GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) ([]*model.Application, error) {
 	var applications []*model.Application
 
-	query := `SELECT id, court_name FROM application
+	query := `SELECT id, request_id, checked_id, person, customer_type, customer_name, file_path,
+                     court_name, judge_name, decision_number, note, status, deadline, assignee_id, 
+                     priority, assignee_name, begin_date, end_date, created_at
+              FROM application
               where court_name like $1 
                 and judge_name like $2
               limit $3 offset $4`
@@ -30,7 +33,13 @@ func (r ApplicationRepo) GetApplications(offset int, count int, applicationCrite
 
 	for rows.Next() {
 		var application model.Application
-		err := rows.Scan(&application.Id, &application.CourtName)
+		err := rows.Scan(&application.Id, &application.RequestId, &application.CheckedId,
+			&application.Person, &application.CustomerType, &application.CustomerName,
+			&application.FilePath, &application.CourtName, &application.JudgeName,
+			&application.DecisionNumber, &application.Note, &application.Status,
+			&application.Deadline, &application.AssigneeId, &application.Priority,
+			&application.AssigneeName, &application.BeginDate, &application.EndDate,
+			&application.CreatedAt)
 		if err != nil {
 			log.Println(err)
 			return nil, err
