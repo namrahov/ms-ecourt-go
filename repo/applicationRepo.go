@@ -6,18 +6,19 @@ import (
 )
 
 type IApplicationRepo interface {
-	GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) ([]*model.ApplicationResponse, error)
+	GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) ([]*model.Application, error)
 	GetTotalCount() (int, error)
 }
 
 type ApplicationRepo struct {
 }
 
-func (r ApplicationRepo) GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) ([]*model.ApplicationResponse, error) {
-	var applications []*model.ApplicationResponse
+func (r ApplicationRepo) GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) ([]*model.Application, error) {
+	var applications []*model.Application
 
 	query := `SELECT id, court_name FROM application
-              where court_name like $1 and judge_name like $2
+              where court_name like $1 
+                and judge_name like $2
               limit $3 offset $4`
 
 	rows, err := Conn.Query(query, "%"+applicationCriteria.CourtName+"%", "%"+applicationCriteria.JudgeName+"%", count, offset)
@@ -28,25 +29,25 @@ func (r ApplicationRepo) GetApplications(offset int, count int, applicationCrite
 	defer rows.Close()
 
 	for rows.Next() {
-		var application model.ApplicationResponse
+		var application model.Application
 		err := rows.Scan(&application.Id, &application.CourtName)
 		if err != nil {
 			log.Println(err)
 			return nil, err
 		}
 
-		var comments []*model.CommentDto
-		commentsRows, err2 := Conn.Query("SELECT description FROM comment where application_id in ($1)", application.Id)
-		if err2 != nil {
-			log.Println(err2)
-			return nil, err2
+		var comments []*model.Comment
+		commentsRows, err := Conn.Query("SELECT id, commentator, description, comment_type, created_at FROM comment where application_id in ($1)", application.Id)
+		if err != nil {
+			log.Println(err)
+			return nil, err
 		}
 		for commentsRows.Next() {
-			var comment model.CommentDto
-			err2 := commentsRows.Scan(&comment.Description)
-			if err2 != nil {
-				log.Println(err2)
-				return nil, err2
+			var comment model.Comment
+			err := commentsRows.Scan(&comment.Id, &comment.Commentator, &comment.Description, &comment.CommentType, &comment.CreatedAt)
+			if err != nil {
+				log.Println(err)
+				return nil, err
 			}
 			comments = append(comments, &comment)
 		}

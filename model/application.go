@@ -1,13 +1,13 @@
 package model
 
 type PageableApplicationDto struct {
-	List           []*ApplicationResponse `json:"list"`
-	HasNextPage    bool                   `json:"hasNextPage"`
-	LastPageNumber int                    `json:"lastPageNumber"`
-	TotalCount     int                    `json:"totalCount"`
+	List           []*Application `json:"list"`
+	HasNextPage    bool           `json:"hasNextPage"`
+	LastPageNumber int            `json:"lastPageNumber"`
+	TotalCount     int            `json:"totalCount"`
 }
 
-type ApplicationResponse struct {
+type Application struct {
 	tableName struct{} `sql:"application" pg:",discard_unknown_columns"`
 
 	Id             int64         `sql:"id"  json:"id"`
@@ -26,7 +26,7 @@ type ApplicationResponse struct {
 	AssigneeId     int64         `sql:"assignee_id" json:"assigneeId"`
 	Priority       Priority      `sql:"priority" json:"priority"`
 	AssigneeName   string        `sql:"assignee_name" json:"assigneeName"`
-	Comments       []*CommentDto `sql:"-" json:"comments"`
+	Comments       []*Comment    `sql:"-" json:"comments"`
 	Documents      []DocumentDto `sql:"-" json:"documents"`
 	BeginDate      string        `sql:"begin_date" json:"beginDate"`
 	EndDate        string        `sql:"end_date" json:"endDate"`
