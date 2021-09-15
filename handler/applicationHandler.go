@@ -42,6 +42,7 @@ func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Requ
 
 	courtName := r.URL.Query().Get("courtName")
 	judgeName := r.URL.Query().Get("judgeName")
+	person := r.URL.Query().Get("person")
 
 	var applicationCriteria model.ApplicationCriteria
 	if courtName != "" {
@@ -49,6 +50,9 @@ func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Requ
 	}
 	if judgeName != "" {
 		applicationCriteria.JudgeName = judgeName
+	}
+	if person != "" {
+		applicationCriteria.Person = person
 	}
 
 	if err != nil {

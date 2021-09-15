@@ -22,9 +22,10 @@ func (r ApplicationRepo) GetApplications(offset int, count int, applicationCrite
               FROM application
               where court_name like $1 
                 and judge_name like $2
-              limit $3 offset $4`
+                and person like $3 
+              limit $4 offset $5`
 
-	rows, err := Conn.Query(query, "%"+applicationCriteria.CourtName+"%", "%"+applicationCriteria.JudgeName+"%", count, offset)
+	rows, err := Conn.Query(query, "%"+applicationCriteria.CourtName+"%", "%"+applicationCriteria.JudgeName+"%", "%"+applicationCriteria.Person+"%", count, offset)
 	if err != nil {
 		log.Println(err)
 		return nil, err
