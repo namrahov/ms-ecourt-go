@@ -9,6 +9,9 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
+var Conn *sql.DB
+var err error
+
 func InitDb() {
 	/*Db = pg.Connect(&pg.Options{
 		Addr:        config.Props.DbHost + ":" + config.Props.DbPort,
@@ -22,18 +25,17 @@ func InitDb() {
 	})*/
 
 	// connect to a database
-	conn, err := sql.Open("pgx",
+	Conn, err = sql.Open("pgx",
 		fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s",
 			config.Props.DbHost, config.Props.DbPort, config.Props.DbName, config.Props.DbUser, config.Props.DbPass))
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Unable to connect: %v\n", err))
 	}
-	defer conn.Close()
 
 	log.Println("Connected to database!")
 
 	// test my connection
-	err = conn.Ping()
+	err = Conn.Ping()
 	if err != nil {
 		log.Fatal("Cannot ping database!")
 	}
@@ -43,11 +45,10 @@ func InitDb() {
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Unable to connect %v\n", err))
 	}
-	defer conn.Close()
 
 	log.Println("Connected to db")
 
-	err = conn.Ping()
+	err = Conn.Ping()
 	if err != nil {
 		log.Fatal("Can not ping database")
 	}

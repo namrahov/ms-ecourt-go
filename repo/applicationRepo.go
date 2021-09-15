@@ -1,18 +1,17 @@
 package repo
 
 import (
-	"database/sql"
+	"fmt"
 	"github.com/namrahov/ms-ecourt-go/model"
 	log "github.com/sirupsen/logrus"
 )
-
-var conn *sql.DB
 
 type IApplicationRepo interface {
 	GetApplications(offset int, count int) ([]*model.ApplicationResponse, error)
 }
 
-type ApplicationRepo struct{}
+type ApplicationRepo struct {
+}
 
 func (r ApplicationRepo) GetApplications(offset int, count int) ([]*model.ApplicationResponse, error) {
 	var applications []*model.ApplicationResponse
@@ -22,35 +21,56 @@ func (r ApplicationRepo) GetApplications(offset int, count int) ([]*model.Applic
 		Offset(offset).
 		Select()*/
 
-	query := `
-      SELECT a.id, a.court_name, c.id, c.description
-      FROM application a
-      JOIN comment c on a.id = c.application.id
-      where a.id = $1
-    `
+	/*query := `SELECT a.id, a.court_name, c.description
+	      FROM application a
+	      JOIN comment c on a.id = c.application.id
+	      where a.id = $1`
 
-	rows, err := conn.Query(query, 4)
-	defer rows.Close()
+		var courtName, description string
+		var id int
+
+		row := conn.QueryRow(query, 1)
+
+		err := row.Scan(&id, &courtName, &description)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		applicationResponse := &model.ApplicationResponse{}
+		comment := &model.CommentDto{}
+
+		fmt.Println("courtName=", courtName)
+		if err != nil {
+			log.Println(err)
+		}
+
+		applicationResponse.Comments = append(applicationResponse.Comments, *comment)
+		applications = append(applications, applicationResponse)
+		defer conn.Close()*/
+
+	rows, err := Conn.Query("select id, court_name from application")
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
+	defer rows.Close()
 
-	application := &model.ApplicationResponse{}
+	var courtName string
+	var id int
 
 	for rows.Next() {
-		comment := &model.CommentDto{}
-		err = rows.Scan(
-			&application.Id,
-			&application.CourtName,
-			&comment.Id,
-			&comment.Description,
-		)
-
-		application.Comments = append(application.Comments, *comment)
+		err := rows.Scan(&id, &courtName)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		fmt.Println("Record is", id, courtName)
 	}
 
-	applications = append(applications, application)
+	if err = rows.Err(); err != nil {
+		log.Fatal("Error scanning rows", err)
+	}
+	defer Conn.Close()
 
 	return applications, err
 }
