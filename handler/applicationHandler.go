@@ -45,15 +45,9 @@ func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Requ
 	person := r.URL.Query().Get("person")
 
 	var applicationCriteria model.ApplicationCriteria
-	if courtName != "" {
-		applicationCriteria.CourtName = courtName
-	}
-	if judgeName != "" {
-		applicationCriteria.JudgeName = judgeName
-	}
-	if person != "" {
-		applicationCriteria.Person = person
-	}
+	applicationCriteria.CourtName = courtName
+	applicationCriteria.JudgeName = judgeName
+	applicationCriteria.Person = person
 
 	if err != nil {
 		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
