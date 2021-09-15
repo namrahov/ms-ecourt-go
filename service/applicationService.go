@@ -29,7 +29,11 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int, appl
 		return nil, errors.New(fmt.Sprintf("%s.can't-get-applications", model.Exception))
 	}
 
-	totalCount := len(applications)
+	totalCount, err := s.Repo.GetTotalCount()
+	if err != nil {
+		logger.Errorf("ActionLog.GetApplications.error: cannot get total count %v", err)
+		return nil, errors.New(fmt.Sprintf("%s.can't-get-total-count", model.Exception))
+	}
 
 	lastPageNumber := totalCount / count
 

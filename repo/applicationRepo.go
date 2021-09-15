@@ -7,6 +7,7 @@ import (
 
 type IApplicationRepo interface {
 	GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) ([]*model.Application, error)
+	GetTotalCount() (int, error)
 }
 
 type ApplicationRepo struct {
@@ -66,4 +67,15 @@ func (r ApplicationRepo) GetApplications(offset int, count int, applicationCrite
 	}
 
 	return applications, err
+}
+
+func (r ApplicationRepo) GetTotalCount() (int, error) {
+	var totalCount int
+	query := `SELECT count(*) FROM application`
+	row := Conn.QueryRow(query)
+	err = row.Scan(&totalCount)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return totalCount, nil
 }
