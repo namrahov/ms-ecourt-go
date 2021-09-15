@@ -40,13 +40,24 @@ func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Requ
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	count, err := strconv.Atoi(r.URL.Query().Get("count"))
 
+	courtName := r.URL.Query().Get("courtName")
+	judgeName := r.URL.Query().Get("judgeName")
+
+	var applicationCriteria model.ApplicationCriteria
+	if courtName != "" {
+		applicationCriteria.CourtName = courtName
+	}
+	if judgeName != "" {
+		applicationCriteria.JudgeName = judgeName
+	}
+
 	if err != nil {
 		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
 		util.HandleError(w, &model.InvalidHeaderError)
 		return
 	}
 
-	result, err := h.Service.GetApplications(r.Context(), page, count)
+	result, err := h.Service.GetApplications(r.Context(), page, count, applicationCriteria)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

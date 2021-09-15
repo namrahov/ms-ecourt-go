@@ -6,14 +6,14 @@ import (
 )
 
 type IApplicationRepo interface {
-	GetApplications(offset int, count int) ([]*model.ApplicationResponse, error)
+	GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) ([]*model.ApplicationResponse, error)
 	GetTotalCount() (int, error)
 }
 
 type ApplicationRepo struct {
 }
 
-func (r ApplicationRepo) GetApplications(offset int, count int) ([]*model.ApplicationResponse, error) {
+func (r ApplicationRepo) GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) ([]*model.ApplicationResponse, error) {
 	var applications []*model.ApplicationResponse
 
 	query := `SELECT id, court_name FROM application limit $1 offset $2`

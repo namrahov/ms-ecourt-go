@@ -10,20 +10,20 @@ import (
 )
 
 type IService interface {
-	GetApplications(ctx context.Context, page int, count int) (*model.PageableApplicationDto, error)
+	GetApplications(ctx context.Context, page int, count int, applicationCriteria model.ApplicationCriteria) (*model.PageableApplicationDto, error)
 }
 
 type Service struct {
 	Repo repo.IApplicationRepo
 }
 
-func (s *Service) GetApplications(ctx context.Context, page int, count int) (*model.PageableApplicationDto, error) {
+func (s *Service) GetApplications(ctx context.Context, page int, count int, applicationCriteria model.ApplicationCriteria) (*model.PageableApplicationDto, error) {
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
 	logger.Info("GetApplications.GetApplications.start")
 
 	offset := page * count
 
-	applications, err := s.Repo.GetApplications(offset, count)
+	applications, err := s.Repo.GetApplications(offset, count, applicationCriteria)
 	if err != nil {
 		logger.Errorf("ActionLog.GetApplications.error: cannot get applications %v", err)
 		return nil, errors.New(fmt.Sprintf("%s.can't-get-applications", model.Exception))
