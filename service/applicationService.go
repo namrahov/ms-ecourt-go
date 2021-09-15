@@ -29,7 +29,7 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int, appl
 		return nil, errors.New(fmt.Sprintf("%s.can't-get-applications", model.Exception))
 	}
 
-	totalCount, err := s.Repo.GetTotalCount()
+	totalCount := len(applications)
 
 	lastPageNumber := totalCount / count
 
