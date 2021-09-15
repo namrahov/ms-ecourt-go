@@ -24,7 +24,7 @@ type ApplicationResponse struct {
 	AssigneeId     int64         `sql:"assignee_id" json:"assigneeId"`
 	Priority       Priority      `sql:"priority" json:"priority"`
 	AssigneeName   string        `sql:"assignee_name" json:"assigneeName"`
-	Comments       []CommentDto  `sql:"-" json:"comments"`
+	Comments       []*CommentDto `sql:"-" json:"comments"`
 	Documents      []DocumentDto `sql:"-" json:"documents"`
 	BeginDate      string        `sql:"begin_date" json:"beginDate"`
 	EndDate        string        `sql:"end_date" json:"endDate"`

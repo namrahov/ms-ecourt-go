@@ -14,7 +14,6 @@ type ApplicationRepo struct {
 }
 
 func (r ApplicationRepo) GetApplications(offset int, count int) ([]*model.ApplicationResponse, error) {
-	var applications []*model.ApplicationResponse
 
 	/*	err := Db.Model(&applications).
 		Limit(count).
@@ -47,24 +46,47 @@ func (r ApplicationRepo) GetApplications(offset int, count int) ([]*model.Applic
 		applicationResponse.Comments = append(applicationResponse.Comments, *comment)
 		applications = append(applications, applicationResponse)
 		defer conn.Close()*/
+	var applications []*model.ApplicationResponse
 
-	rows, err := Conn.Query("select id, court_name from application")
+	query := `SELECT id, court_name FROM application`
+
+	rows, err := Conn.Query(query)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	var courtName string
-	var id int
-
 	for rows.Next() {
-		err := rows.Scan(&id, &courtName)
+		var application model.ApplicationResponse
+		err := rows.Scan(&application.Id, &application.CourtName)
 		if err != nil {
 			log.Println(err)
 			return nil, err
 		}
-		fmt.Println("Record is", id, courtName)
+
+		var comment model.CommentDto
+		var comments []*model.CommentDto
+		fmt.Println("application.Id", application.Id)
+		rowsComments, err2 := Conn.Query("SELECT description FROM comment where application_id = $1", application.Id)
+		if err2 != nil {
+			log.Println(err2)
+			return nil, err2
+		}
+		for rowsComments.Next() {
+			err2 := rows.Scan(&comment.Description)
+			if err2 != nil {
+				log.Println(err2)
+				return nil, err2
+			}
+
+			comments = append(comments, &comment)
+		}
+
+		application.Comments = comments
+		applications = append(applications, &application)
+
+		fmt.Println("Record is", application.CourtName)
 	}
 
 	if err = rows.Err(); err != nil {
