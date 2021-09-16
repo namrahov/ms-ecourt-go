@@ -17,6 +17,7 @@ type ApplicationRepo struct {
 func (r ApplicationRepo) GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) (*[]model.Application, error) {
 	var applications []model.Application
 	err := Db.Model(&applications).
+		Column("application.*", "Comments").
 		Where("court_name like ?", "%"+applicationCriteria.CourtName+"%").
 		Where("judge_name like ?", "%"+applicationCriteria.JudgeName+"%").
 		Where("person like ?", "%"+applicationCriteria.Person+"%").
@@ -31,21 +32,7 @@ func (r ApplicationRepo) GetApplications(offset int, count int, applicationCrite
 		return nil, err
 	}
 
-	var applicationResponse []model.Application
-	for _, application := range applications {
-		var comments []model.Comment
-		err := Db.Model(&comments).
-			Where("application_id in (?)", application.Id).
-			Select()
-		if err != nil {
-			log.Println(err)
-			return nil, err
-		}
-		application.Comments = comments
-		applicationResponse = append(applicationResponse, application)
-	}
-
-	return &applicationResponse, err
+	return &applications, err
 }
 
 func (r ApplicationRepo) GetTotalCount() (int, error) {
@@ -61,6 +48,7 @@ func (r ApplicationRepo) GetTotalCount() (int, error) {
 func (r ApplicationRepo) GetApplicationById(id int64) (*model.Application, error) {
 	var application model.Application
 	err := Db.Model(&application).
+		Column("application.*", "Comments").
 		Where("id = ?", id).
 		Select()
 	if err != nil {

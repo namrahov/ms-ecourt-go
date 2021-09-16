@@ -9,7 +9,7 @@ type Comment struct {
 	CommentType   CommentType `sql:"comment_type" json:"commentType"`
 	CreatedAt     string      `sql:"created_at" json:"createdAt"`
 	UpdatedAt     string      `sql:"updated_at" json:"updatedAt"`
-	ApplicationId int64       `sql:"application_id" json:"applicationId"`
+	ApplicationId int64       `sql:"application_id" json:"-"`
 }
 
 type CommentType string
