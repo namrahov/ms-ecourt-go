@@ -53,9 +53,6 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int, appl
 		TotalCount:     totalCount,
 	}
 
-	/*parsed, _ := time.Parse("2006-01-02 15:04:05", delivery.DeliveryDate)
-	delivery.DeliveryDate = parsed.Format(time.RFC3339)*/
-
 	logger.Info("ActionLog.GetApplications.success")
 	return &pageableApplicationDto, nil
 }
