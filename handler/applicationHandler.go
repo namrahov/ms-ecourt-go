@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	mid "github.com/go-chi/chi/middleware"
 	"github.com/gorilla/mux"
 	"github.com/namrahov/ms-ecourt-go/config"
@@ -10,7 +9,6 @@ import (
 	"github.com/namrahov/ms-ecourt-go/model"
 	"github.com/namrahov/ms-ecourt-go/repo"
 	"github.com/namrahov/ms-ecourt-go/service"
-	"github.com/namrahov/ms-ecourt-go/util"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
@@ -31,15 +29,18 @@ func ApplicationHandler(router *mux.Router) *mux.Router {
 	}
 
 	router.HandleFunc(config.RootPath+"/applications", h.getApplications).Methods("GET")
+	router.HandleFunc(config.RootPath+"/applications/{id}", h.getApplication).Methods("GET")
 
 	return router
-
 }
 
 func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Request) {
-
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	count, err := strconv.Atoi(r.URL.Query().Get("count"))
+	if err != nil {
+		log.Errorf("getApplications.error in parsing page or count: %v\n", err)
+		return
+	}
 
 	courtName := r.URL.Query().Get("courtName")
 	judgeName := r.URL.Query().Get("judgeName")
@@ -57,13 +58,6 @@ func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Requ
 	}
 	applicationCriteria.CreateDateFrom = createDateFrom
 	applicationCriteria.CreateDateTo = createDateTo
-	fmt.Println("createDateTo=", createDateTo)
-
-	if err != nil {
-		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
-		util.HandleError(w, &model.InvalidHeaderError)
-		return
-	}
 
 	result, err := h.Service.GetApplications(r.Context(), page, count, applicationCriteria)
 	if err != nil {
@@ -74,5 +68,23 @@ func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Requ
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
+}
 
+func (h *applicationHandler) getApplication(w http.ResponseWriter, r *http.Request) {
+	idStr := mux.Vars(r)["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := h.Service.GetApplication(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(result)
 }

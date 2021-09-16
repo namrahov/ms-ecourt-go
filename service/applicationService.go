@@ -11,6 +11,7 @@ import (
 
 type IService interface {
 	GetApplications(ctx context.Context, page int, count int, applicationCriteria model.ApplicationCriteria) (*model.PageableApplicationDto, error)
+	GetApplication(ctx context.Context, id int64) (*model.Application, error)
 }
 
 type Service struct {
@@ -57,4 +58,19 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int, appl
 
 	logger.Info("ActionLog.GetApplications.success")
 	return &pageableApplicationDto, nil
+}
+
+func (s *Service) GetApplication(ctx context.Context, id int64) (*model.Application, error) {
+	logger := ctx.Value(model.ContextLogger).(*log.Entry)
+	logger.Info("GetApplications.GetApplication.start")
+
+	application, err := s.Repo.GetApplicationById(id)
+	if err != nil {
+		logger.Errorf("ActionLog.GetApplication.error: cannot get delivery details for application id %d, %v", id, err)
+		return nil, errors.New(fmt.Sprintf("%s.can't-get-application", model.Exception))
+	}
+
+	logger.Info("ActionLog.GetApplication.success")
+
+	return application, nil
 }
