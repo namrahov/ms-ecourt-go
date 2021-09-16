@@ -8,6 +8,7 @@ import (
 type IApplicationRepo interface {
 	GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) ([]*model.Application, error)
 	GetTotalCount() (int, error)
+	GetApplicationById(id int64) (*model.Application, error)
 }
 
 type ApplicationRepo struct {
@@ -82,4 +83,26 @@ func (r ApplicationRepo) GetTotalCount() (int, error) {
 		log.Fatal(err)
 	}
 	return totalCount, nil
+}
+
+func (r ApplicationRepo) GetApplicationById(id int64) (*model.Application, error) {
+	var application model.Application
+	query := `SELECT id, request_id, checked_id, person, customer_type, customer_name, file_path,
+                     court_name, judge_name, decision_number, note, status, deadline, assignee_id, 
+                     priority, assignee_name, begin_date, end_date, created_at
+              FROM application
+              where id = $1`
+	row := Conn.QueryRow(query, id)
+	err = row.Scan(&application.Id, &application.RequestId, &application.CheckedId,
+		&application.Person, &application.CustomerType, &application.CustomerName,
+		&application.FilePath, &application.CourtName, &application.JudgeName,
+		&application.DecisionNumber, &application.Note, &application.Status,
+		&application.Deadline, &application.AssigneeId, &application.Priority,
+		&application.AssigneeName, &application.BeginDate, &application.EndDate,
+		&application.CreatedAt)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &application, nil
 }
