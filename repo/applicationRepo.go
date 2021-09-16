@@ -23,7 +23,7 @@ func (r ApplicationRepo) GetApplications(offset int, count int, applicationCrite
               WHERE court_name like $1 
                 and judge_name like $2
                 and person like $3 
-                and created_at >= $4 and created_at <= $5               
+                and created_at::DATE >= $4 and created_at::DATE <= $5               
               limit $6 offset $7`
 
 	rows, err := Conn.Query(query,
