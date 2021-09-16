@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	mid "github.com/go-chi/chi/middleware"
 	"github.com/gorilla/mux"
 	"github.com/namrahov/ms-ecourt-go/config"
@@ -43,11 +44,20 @@ func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Requ
 	courtName := r.URL.Query().Get("courtName")
 	judgeName := r.URL.Query().Get("judgeName")
 	person := r.URL.Query().Get("person")
+	createDateFrom := r.URL.Query().Get("createDateFrom")
+	createDateTo := r.URL.Query().Get("createDateTo")
 
 	var applicationCriteria model.ApplicationCriteria
 	applicationCriteria.CourtName = courtName
 	applicationCriteria.JudgeName = judgeName
 	applicationCriteria.Person = person
+	if createDateTo == "" && createDateFrom == "" {
+		createDateTo = "2300-01-01"
+		createDateFrom = "1000-01-01"
+	}
+	applicationCriteria.CreateDateFrom = createDateFrom
+	applicationCriteria.CreateDateTo = createDateTo
+	fmt.Println("createDateTo=", createDateTo)
 
 	if err != nil {
 		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
