@@ -1,10 +1,13 @@
 package model
 
-type DocumentDto struct {
-	Id             int64          `json:"id"`
-	Description    string         `json:"description"`
-	DocumentStatus DocumentStatus `json:"documentStatus"`
-	RequestType    RequestType    `json:"requestType"`
+type Document struct {
+	tableName struct{} `sql:"document" pg:",discard_unknown_columns"`
+
+	Id             int64          `sql:"id" json:"id"`
+	Description    string         `sql:"description" json:"description"`
+	DocumentStatus DocumentStatus `sql:"document_status" json:"documentStatus"`
+	RequestType    RequestType    `sql:"request_type" json:"requestType"`
+	ApplicationId  int64          `sql:"application_id" json:"-"`
 }
 
 type DocumentStatus string
