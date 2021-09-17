@@ -12,6 +12,7 @@ import (
 type IService interface {
 	GetApplications(ctx context.Context, page int, count int, applicationCriteria model.ApplicationCriteria) (*model.PageableApplicationDto, error)
 	GetApplication(ctx context.Context, id int64) (*model.Application, error)
+	GetFilterInfo(ctx context.Context) (*model.FilterInfo, error)
 }
 
 type Service struct {
@@ -24,10 +25,10 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int, appl
 
 	offset := page * count
 
-	applications, err := s.Repo.GetApplications(offset, count, applicationCriteria)
+	applications, err := s.Repo.GetPageableApplications(offset, count, applicationCriteria)
 	if err != nil {
-		logger.Errorf("ActionLog.GetApplications.error: cannot get applications %v", err)
-		return nil, errors.New(fmt.Sprintf("%s.can't-get-applications", model.Exception))
+		logger.Errorf("ActionLog.GetApplications.error: cannot get paging applications %v", err)
+		return nil, errors.New(fmt.Sprintf("%s.can't-get-paging-applications", model.Exception))
 	}
 
 	totalCount, err := s.Repo.GetTotalCount()
@@ -63,11 +64,48 @@ func (s *Service) GetApplication(ctx context.Context, id int64) (*model.Applicat
 
 	application, err := s.Repo.GetApplicationById(id)
 	if err != nil {
-		logger.Errorf("ActionLog.GetApplication.error: cannot get delivery details for application id %d, %v", id, err)
+		logger.Errorf("ActionLog.GetApplication.error: cannot get application for application id %d, %v", id, err)
 		return nil, errors.New(fmt.Sprintf("%s.can't-get-application", model.Exception))
 	}
 
 	logger.Info("ActionLog.GetApplication.success")
 
 	return application, nil
+}
+
+func (s *Service) GetFilterInfo(ctx context.Context) (*model.FilterInfo, error) {
+	logger := ctx.Value(model.ContextLogger).(*log.Entry)
+	logger.Info("GetApplications.GetFilterInfo.start")
+
+	applications, err := s.Repo.GetApplications()
+	if err != nil {
+		logger.Errorf("ActionLog.GetFilterInfo.error: cannot get applications %v", err)
+		return nil, errors.New(fmt.Sprintf("%s.can't-get-applications", model.Exception))
+	}
+
+	var courts []string
+	var judges []string
+	setCourts := make(map[string]bool)
+	setJudges := make(map[string]bool)
+
+	for _, application := range *applications {
+		setCourts[application.CourtName] = true
+		setJudges[application.JudgeName] = true
+	}
+
+	for k := range setCourts {
+		courts = append(courts, k)
+	}
+
+	for k := range setJudges {
+		judges = append(judges, k)
+	}
+
+	filterInfo := model.FilterInfo{
+		Courts: courts,
+		Judges: judges,
+	}
+
+	logger.Info("ActionLog.GetFilterInfo.success")
+	return &filterInfo, nil
 }

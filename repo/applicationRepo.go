@@ -6,18 +6,19 @@ import (
 )
 
 type IApplicationRepo interface {
-	GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) (*[]model.Application, error)
+	GetPageableApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) (*[]model.Application, error)
 	GetTotalCount() (int, error)
 	GetApplicationById(id int64) (*model.Application, error)
+	GetApplications() (*[]model.Application, error)
 }
 
 type ApplicationRepo struct {
 }
 
-func (r ApplicationRepo) GetApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) (*[]model.Application, error) {
+func (r ApplicationRepo) GetPageableApplications(offset int, count int, applicationCriteria model.ApplicationCriteria) (*[]model.Application, error) {
 	var applications []model.Application
 	err := Db.Model(&applications).
-		Column("application.*", "Comments").
+		Column("application.*", "Comments", "Documents").
 		Where("court_name like ?", "%"+applicationCriteria.CourtName+"%").
 		Where("judge_name like ?", "%"+applicationCriteria.JudgeName+"%").
 		Where("person like ?", "%"+applicationCriteria.Person+"%").
@@ -48,7 +49,7 @@ func (r ApplicationRepo) GetTotalCount() (int, error) {
 func (r ApplicationRepo) GetApplicationById(id int64) (*model.Application, error) {
 	var application model.Application
 	err := Db.Model(&application).
-		Column("application.*", "Comments").
+		Column("application.*", "Comments", "Documents").
 		Where("id = ?", id).
 		Select()
 	if err != nil {
@@ -56,4 +57,16 @@ func (r ApplicationRepo) GetApplicationById(id int64) (*model.Application, error
 	}
 
 	return &application, nil
+}
+
+func (r ApplicationRepo) GetApplications() (*[]model.Application, error) {
+	var applications []model.Application
+	err := Db.Model(&applications).
+		Column("application.*", "Comments", "Documents").
+		Select()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &applications, nil
 }
