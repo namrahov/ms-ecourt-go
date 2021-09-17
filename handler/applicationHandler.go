@@ -9,6 +9,7 @@ import (
 	"github.com/namrahov/ms-ecourt-go/model"
 	"github.com/namrahov/ms-ecourt-go/repo"
 	"github.com/namrahov/ms-ecourt-go/service"
+	"github.com/namrahov/ms-ecourt-go/util"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
@@ -24,13 +25,14 @@ func ApplicationHandler(router *mux.Router) *mux.Router {
 
 	h := &applicationHandler{
 		Service: &service.Service{
-			Repo: &repo.ApplicationRepo{},
+			ApplicationRepo: &repo.ApplicationRepo{},
 		},
 	}
 
 	router.HandleFunc(config.RootPath+"/applications", h.getApplications).Methods("GET")
 	router.HandleFunc(config.RootPath+"/applications/{id}", h.getApplication).Methods("GET")
 	router.HandleFunc(config.RootPath+"/applications/get/filter-info", h.getFilterInfo).Methods("GET")
+	router.HandleFunc(config.RootPath+"/applications/{id}/change-status", h.changeStatus).Methods("GET")
 
 	return router
 }
@@ -101,4 +103,31 @@ func (h *applicationHandler) getFilterInfo(w http.ResponseWriter, r *http.Reques
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
+}
+
+func (h *applicationHandler) changeStatus(w http.ResponseWriter, r *http.Request) {
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+
+	idStr := mux.Vars(r)["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var request model.ChangeStatusRequest
+	err = util.DecodeBody(w, r, &request)
+	if err != nil {
+		return
+	}
+
+	err = h.Service.ChangeStatus(r.Context(), userId, id, request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//w.Header().Add("Content-Type", "application/json")
+	//	w.WriteHeader(http.StatusOK)
+	//json.NewEncoder(w).Encode(result)
 }

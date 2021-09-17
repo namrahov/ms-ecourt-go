@@ -18,3 +18,17 @@ const (
 	Internal CommentType = "INTERNAL"
 	External             = "EXTERNAL"
 )
+
+type UserDto struct {
+	Id           int64  `json:"id"`
+	Username     string `json:"username"`
+	Pincode      string `json:"pincode"`
+	FirstName    string `json:"firstName"`
+	LastName     string `json:"lastName"`
+	Email        string `json:"email"`
+	Phone        string `json:"phone"`
+	Department   string `json:"department"`
+	Position     string `json:"position"`
+	FlexUserName string `json:"flexUserName"`
+	IsActive     bool   `json:"isActive"`
+}

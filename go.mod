@@ -16,6 +16,7 @@ require (
 	github.com/lib/pq v1.10.3 // indirect
 	github.com/onsi/gomega v1.16.0 // indirect
 	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/common v0.26.0 // indirect
 	github.com/rubenv/sql-migrate v0.0.0-20210614095031-55d5740dbbcc // indirect
 	github.com/sirupsen/logrus v1.8.1
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
