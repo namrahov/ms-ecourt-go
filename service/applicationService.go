@@ -86,8 +86,8 @@ func (s *Service) GetFilterInfo(ctx context.Context) (*model.FilterInfo, error) 
 
 	applications, err := s.ApplicationRepo.GetApplications()
 	if err != nil {
-		logger.Errorf("ActionLog.GetFilterInfo.error: cannot get applications %v", err)
-		return nil, errors.New(fmt.Sprintf("%s.can't-get-applications", model.Exception))
+		logger.Errorf("ActionLog.GetFilterInfo.error: cannot get application info %v", err)
+		return nil, errors.New(fmt.Sprintf("%s.can't-get-application-info", model.Exception))
 	}
 
 	var courts []string
@@ -135,7 +135,7 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 
 	err = s.ValidationUtil.ValidationApplicationStatus(application.Status, request.Status)
 	if err != nil {
-		log.Warn(fmt.Sprintf("ActionLog.ValidationApplicationStatus.error: %s -> %s is not possible", application.Status, request.Status))
+		log.Warn(fmt.Sprintf("ActionLog.ChangeStatus.error: %s -> %s is not possible", application.Status, request.Status))
 		return &model.ErrorResponse{
 			Code:   fmt.Sprintf("%s.Invalid status change from %s to %s", model.Exception, application.Status, request.Status),
 			Status: http.StatusForbidden,
@@ -152,7 +152,7 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 	if request.Status == model.Hold {
 		err := s.CommentRepo.SaveComment(&comment)
 		if err != nil {
-			logger.Errorf("ActionLog.SaveComment.error: could not save comment details for order %d - %v", application.Id, err)
+			logger.Errorf("ActionLog.SaveComment.error: could not save comment for application id %d - %v", application.Id, err)
 			return &model.ErrorResponse{Code: err.Error(), Status: http.StatusInternalServerError}
 		}
 	}
