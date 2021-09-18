@@ -2,7 +2,6 @@ package util
 
 import (
 	"encoding/json"
-	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/namrahov/ms-ecourt-go/model"
 	log "github.com/sirupsen/logrus"
 	"io"
@@ -31,14 +30,4 @@ func DecodeJSON(r io.Reader, data interface{}) *model.ErrorResponse {
 
 	log.Debug("ActionLog.DecodeJSON.success")
 	return nil
-}
-
-func WriteExcelHeaders(w http.ResponseWriter, file *excelize.File) {
-	w.Header().Add(model.ContentDispositionString, model.AttachmentFilename)
-	w.Header().Add(model.ContentTypeString, model.ExcelType)
-	err := file.Write(w)
-
-	if err != nil {
-		log.Error("ActionLog.WriteExcelHeaders.error happened when write excel file")
-	}
 }

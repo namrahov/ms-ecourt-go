@@ -4,18 +4,22 @@ import (
 	"encoding/json"
 	mid "github.com/go-chi/chi/middleware"
 	"github.com/gorilla/mux"
+	"github.com/namrahov/ms-ecourt-go/client"
 	"github.com/namrahov/ms-ecourt-go/config"
 	"github.com/namrahov/ms-ecourt-go/middleware"
 	"github.com/namrahov/ms-ecourt-go/model"
 	"github.com/namrahov/ms-ecourt-go/repo"
 	"github.com/namrahov/ms-ecourt-go/service"
+	"github.com/namrahov/ms-ecourt-go/service/permission"
+	"github.com/namrahov/ms-ecourt-go/util"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 )
 
 type applicationHandler struct {
-	Service service.IService
+	Service           service.IService
+	PermissionService permission.IService
 }
 
 func ApplicationHandler(router *mux.Router) *mux.Router {
@@ -24,18 +28,41 @@ func ApplicationHandler(router *mux.Router) *mux.Router {
 
 	h := &applicationHandler{
 		Service: &service.Service{
-			Repo: &repo.ApplicationRepo{},
+			ApplicationRepo: &repo.ApplicationRepo{},
+			CommentRepo:     &repo.CommentRepo{},
+			AdminClient:     &client.AdminClient{},
+			ValidationUtil:  &util.ValidationUtil{},
+		},
+		PermissionService: &permission.Service{
+			AdminClient: &client.AdminClient{},
 		},
 	}
 
 	router.HandleFunc(config.RootPath+"/applications", h.getApplications).Methods("GET")
 	router.HandleFunc(config.RootPath+"/applications/{id}", h.getApplication).Methods("GET")
 	router.HandleFunc(config.RootPath+"/applications/get/filter-info", h.getFilterInfo).Methods("GET")
+	router.HandleFunc(config.RootPath+"/applications/{id}/change-status", h.changeStatus).Methods("GET")
 
 	return router
 }
 
 func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Request) {
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+
+	if err != nil {
+		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
+		util.HandleError(w, &model.InvalidHeaderError)
+		return
+	}
+
+	hasPermission := h.PermissionService.HasPermission(userId, model.GenerateReportPermissionKey)
+
+	if !hasPermission {
+		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
+		util.HandleError(w, &model.AccessDeniedError)
+		return
+	}
+
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	count, err := strconv.Atoi(r.URL.Query().Get("count"))
 	if err != nil {
@@ -72,6 +99,22 @@ func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *applicationHandler) getApplication(w http.ResponseWriter, r *http.Request) {
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+
+	if err != nil {
+		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
+		util.HandleError(w, &model.InvalidHeaderError)
+		return
+	}
+
+	hasPermission := h.PermissionService.HasPermission(userId, model.GenerateReportPermissionKey)
+
+	if !hasPermission {
+		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
+		util.HandleError(w, &model.AccessDeniedError)
+		return
+	}
+
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -91,6 +134,21 @@ func (h *applicationHandler) getApplication(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *applicationHandler) getFilterInfo(w http.ResponseWriter, r *http.Request) {
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+
+	if err != nil {
+		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
+		util.HandleError(w, &model.InvalidHeaderError)
+		return
+	}
+
+	hasPermission := h.PermissionService.HasPermission(userId, model.GenerateReportPermissionKey)
+
+	if !hasPermission {
+		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
+		util.HandleError(w, &model.AccessDeniedError)
+		return
+	}
 
 	result, err := h.Service.GetFilterInfo(r.Context())
 	if err != nil {
@@ -101,4 +159,45 @@ func (h *applicationHandler) getFilterInfo(w http.ResponseWriter, r *http.Reques
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
+}
+
+func (h *applicationHandler) changeStatus(w http.ResponseWriter, r *http.Request) {
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+
+	if err != nil {
+		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
+		util.HandleError(w, &model.InvalidHeaderError)
+		return
+	}
+
+	hasPermission := h.PermissionService.HasPermission(userId, model.GenerateReportPermissionKey)
+
+	if !hasPermission {
+		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
+		util.HandleError(w, &model.AccessDeniedError)
+		return
+	}
+
+	idStr := mux.Vars(r)["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var request model.ChangeStatusRequest
+	err = util.DecodeBody(w, r, &request)
+	if err != nil {
+		return
+	}
+
+	errorResponse := h.Service.ChangeStatus(r.Context(), userId, id, request)
+	if errorResponse != nil {
+		w.WriteHeader(errorResponse.Status)
+		json.NewEncoder(w).Encode(errorResponse)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }
