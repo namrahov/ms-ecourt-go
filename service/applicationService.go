@@ -28,7 +28,7 @@ type Service struct {
 
 func (s *Service) GetApplications(ctx context.Context, page int, count int, applicationCriteria model.ApplicationCriteria) (*model.PageableApplicationDto, error) {
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
-	logger.Info("GetApplications.GetApplications.start")
+	logger.Info("ActionLog.GetApplications.start")
 
 	offset := page * count
 
@@ -67,7 +67,7 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int, appl
 
 func (s *Service) GetApplication(ctx context.Context, id int64) (*model.Application, error) {
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
-	logger.Info("GetApplications.GetApplication.start")
+	logger.Info("ActionLog.GetApplication.start")
 
 	application, err := s.ApplicationRepo.GetApplicationById(id)
 	if err != nil {
@@ -82,7 +82,7 @@ func (s *Service) GetApplication(ctx context.Context, id int64) (*model.Applicat
 
 func (s *Service) GetFilterInfo(ctx context.Context) (*model.FilterInfo, error) {
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
-	logger.Info("GetApplications.GetFilterInfo.start")
+	logger.Info("ActionLog.GetFilterInfo.start")
 
 	applications, err := s.ApplicationRepo.GetApplications()
 	if err != nil {
@@ -119,7 +119,7 @@ func (s *Service) GetFilterInfo(ctx context.Context) (*model.FilterInfo, error) 
 
 func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, request model.ChangeStatusRequest) *model.ErrorResponse {
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
-	logger.Info("GetApplications.ChangeStatus.start")
+	logger.Info("ActionLog.ChangeStatus.start")
 
 	user, err := s.AdminClient.GetUserById(userId)
 	if err != nil {
@@ -163,6 +163,6 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 		return &model.ErrorResponse{Code: err.Error(), Status: http.StatusInternalServerError}
 	}
 
-	logger.Info("GetApplications.ChangeStatus.end")
+	logger.Info("ActionLog.ChangeStatus.end")
 	return nil
 }
