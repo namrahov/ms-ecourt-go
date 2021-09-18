@@ -82,6 +82,22 @@ func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *applicationHandler) getApplication(w http.ResponseWriter, r *http.Request) {
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+
+	if err != nil {
+		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
+		util.HandleError(w, &model.InvalidHeaderError)
+		return
+	}
+
+	hasPermission := h.PermissionService.HasPermission(userId, model.GenerateReportPermissionKey)
+
+	if !hasPermission {
+		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
+		util.HandleError(w, &model.AccessDeniedError)
+		return
+	}
+
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -101,6 +117,21 @@ func (h *applicationHandler) getApplication(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *applicationHandler) getFilterInfo(w http.ResponseWriter, r *http.Request) {
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+
+	if err != nil {
+		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
+		util.HandleError(w, &model.InvalidHeaderError)
+		return
+	}
+
+	hasPermission := h.PermissionService.HasPermission(userId, model.GenerateReportPermissionKey)
+
+	if !hasPermission {
+		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
+		util.HandleError(w, &model.AccessDeniedError)
+		return
+	}
 
 	result, err := h.Service.GetFilterInfo(r.Context())
 	if err != nil {
@@ -148,8 +179,4 @@ func (h *applicationHandler) changeStatus(w http.ResponseWriter, r *http.Request
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	//w.Header().Add("Content-Type", "application/json")
-	//	w.WriteHeader(http.StatusOK)
-	//json.NewEncoder(w).Encode(result)
 }
