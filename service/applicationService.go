@@ -155,3 +155,59 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 
 	return nil
 }
+
+/*
+enum class Status(private val assignableStatuses: Array<String> = arrayOf()) {
+    RECEIVED(arrayOf("IN_PROGRESS", "HOLD")),
+    IN_PROGRESS(arrayOf("SENT", "HOLD")),
+    SENT(arrayOf()),
+    HOLD(arrayOf("SENT", "IN_PROGRESS"));
+
+    fun canBeChangedTo(status: Status) = this.assignableStatuses.contains(status.name)
+}
+
+*/
+/*
+
+   private fun validateApplicationStatus(applicationStatus: Status, requestStatus: Status) {
+       if (!applicationStatus.canBeChangedTo(requestStatus)) {
+           log.error("ActionLog.validateCardStatus.error {} -> {} is not possible", applicationStatus, requestStatus)
+           throw ApplicationException("INVALID_STATUS_FROM_" + applicationStatus + "_TO_" + requestStatus)
+       }
+   }
+*/
+func ValidationApplicationStatus(applicationStatus model.Status, requestStatus model.Status) error {
+	if !canBeChangeTo(applicationStatus, requestStatus) {
+		log.Error("ActionLog.ValidationApplicationStatus.error: {} -> {} is not possible", applicationStatus, requestStatus)
+		return errors.New(fmt.Sprintf("Invalid stattus from %s to %s", applicationStatus, requestStatus))
+	}
+	return nil
+}
+
+func canBeChangeTo(applicationStatus model.Status, requestStatus model.Status) bool {
+	permissions := statusChangePermissions(applicationStatus)
+	for _, permission := range permissions {
+		if permission == requestStatus {
+			return true
+		}
+	}
+	return false
+}
+
+func statusChangePermissions(applicationStatus model.Status) []model.Status {
+	var permissions []model.Status
+	switch applicationStatus {
+	case model.Received:
+		permissions = append(permissions, model.Inprogress, model.Hold)
+		break
+	case model.Inprogress:
+		permissions = append(permissions, model.Sent, model.Hold)
+		break
+	case model.Sent:
+		break
+	case model.Hold:
+		permissions = append(permissions, model.Sent, model.Inprogress)
+		break
+	}
+	return permissions
+}
