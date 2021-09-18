@@ -31,6 +31,7 @@ func ApplicationHandler(router *mux.Router) *mux.Router {
 			ApplicationRepo: &repo.ApplicationRepo{},
 			CommentRepo:     &repo.CommentRepo{},
 			AdminClient:     &client.AdminClient{},
+			ValidationUtil:  &util.ValidationUtil{},
 		},
 		PermissionService: &permission.Service{
 			AdminClient: &client.AdminClient{},

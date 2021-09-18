@@ -7,6 +7,7 @@ import (
 	"github.com/namrahov/ms-ecourt-go/client"
 	"github.com/namrahov/ms-ecourt-go/model"
 	"github.com/namrahov/ms-ecourt-go/repo"
+	"github.com/namrahov/ms-ecourt-go/util"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -22,6 +23,7 @@ type Service struct {
 	ApplicationRepo repo.IApplicationRepo
 	CommentRepo     repo.ICommentRepo
 	AdminClient     client.IAdminClient
+	ValidationUtil  util.IValidationUtil
 }
 
 func (s *Service) GetApplications(ctx context.Context, page int, count int, applicationCriteria model.ApplicationCriteria) (*model.PageableApplicationDto, error) {
@@ -131,7 +133,7 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 		return &model.ErrorResponse{Code: err.Error(), Status: http.StatusInternalServerError}
 	}
 
-	err = ValidationApplicationStatus(application.Status, request.Status)
+	err = s.ValidationUtil.ValidationApplicationStatus(application.Status, request.Status)
 	if err != nil {
 		log.Warn(fmt.Sprintf("ActionLog.ValidationApplicationStatus.error: %s -> %s is not possible", application.Status, request.Status))
 		return &model.ErrorResponse{
@@ -163,40 +165,4 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 
 	logger.Info("GetApplications.ChangeStatus.end")
 	return nil
-}
-
-func ValidationApplicationStatus(applicationStatus model.Status, requestStatus model.Status) error {
-	if !canBeChangeTo(applicationStatus, requestStatus) {
-		log.Error(fmt.Sprintf("ActionLog.ValidationApplicationStatus.error: %s -> %s is not possible", applicationStatus, requestStatus))
-		return errors.New(fmt.Sprintf("Invalid stattus from %s to %s", applicationStatus, requestStatus))
-	}
-	return nil
-}
-
-func canBeChangeTo(applicationStatus model.Status, requestStatus model.Status) bool {
-	permissions := statusChangePermissions(applicationStatus)
-	for _, permission := range permissions {
-		if permission == requestStatus {
-			return true
-		}
-	}
-	return false
-}
-
-func statusChangePermissions(applicationStatus model.Status) []model.Status {
-	var permissions []model.Status
-	switch applicationStatus {
-	case model.Received:
-		permissions = append(permissions, model.Inprogress, model.Hold)
-		break
-	case model.Inprogress:
-		permissions = append(permissions, model.Sent, model.Hold)
-		break
-	case model.Sent:
-		break
-	case model.Hold:
-		permissions = append(permissions, model.Sent, model.Inprogress)
-		break
-	}
-	return permissions
 }
