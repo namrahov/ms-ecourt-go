@@ -19,7 +19,7 @@ type IService interface {
 
 type Service struct {
 	ApplicationRepo repo.IApplicationRepo
-	CommentRepo     repo.CommentRepo
+	CommentRepo     repo.ICommentRepo
 	AdminClient     client.IAdminClient
 }
 
@@ -125,12 +125,6 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 		log.Error("ActionLog.ChangeStatus.warn while call admin client for userId:", userId)
 		return userDtoErr
 	}
-
-	/*user := model.UserDto{
-	Id: 1, Username: `valger`, Pincode: "12",
-	FirstName: `Milla`, LastName: `Jovovic`, Email: `12`,
-	Phone: `12`, Department: `12`, Position: `12`, FlexUserName: `12`,
-	IsActive: true}*/
 
 	application, err := s.ApplicationRepo.GetApplicationById(id)
 	if err != nil {
