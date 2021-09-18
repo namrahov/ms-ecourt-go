@@ -8,13 +8,14 @@ import (
 	"github.com/namrahov/ms-ecourt-go/model"
 	"github.com/namrahov/ms-ecourt-go/repo"
 	log "github.com/sirupsen/logrus"
+	"net/http"
 )
 
 type IService interface {
 	GetApplications(ctx context.Context, page int, count int, applicationCriteria model.ApplicationCriteria) (*model.PageableApplicationDto, error)
 	GetApplication(ctx context.Context, id int64) (*model.Application, error)
 	GetFilterInfo(ctx context.Context) (*model.FilterInfo, error)
-	ChangeStatus(ctx context.Context, userId int64, id int64, request model.ChangeStatusRequest) error
+	ChangeStatus(ctx context.Context, userId int64, id int64, request model.ChangeStatusRequest) *model.ErrorResponse
 }
 
 type Service struct {
@@ -114,20 +115,20 @@ func (s *Service) GetFilterInfo(ctx context.Context) (*model.FilterInfo, error) 
 	return &filterInfo, nil
 }
 
-func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, request model.ChangeStatusRequest) error {
+func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, request model.ChangeStatusRequest) *model.ErrorResponse {
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
 	logger.Info("GetApplications.ChangeStatus.start")
 
-	user, userDtoErr := s.AdminClient.GetUserById(userId)
-	if userDtoErr != nil {
+	user, err := s.AdminClient.GetUserById(userId)
+	if err != nil {
 		log.Error("ActionLog.ChangeStatus.warn while call admin client for userId:", userId)
-		return userDtoErr
+		return &model.ErrorResponse{Code: err.Error(), Status: http.StatusForbidden}
 	}
 
 	application, err := s.ApplicationRepo.GetApplicationById(id)
 	if err != nil {
 		logger.Errorf("ActionLog.ChangeStatus.error: cannot get application for application id %d, %v", id, err)
-		return errors.New(fmt.Sprintf("%s.can't-get-application", model.Exception))
+		return &model.ErrorResponse{Code: err.Error(), Status: http.StatusInternalServerError}
 	}
 
 	comment := model.Comment{
@@ -141,44 +142,32 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 		err := s.CommentRepo.SaveComment(&comment)
 		if err != nil {
 			logger.Errorf("ActionLog.SaveComment.error: could not save comment details for order %d - %v", application.Id, err)
-			return errors.New(fmt.Sprintf("%s.can't-save-comment", model.Exception))
+			return &model.ErrorResponse{Code: err.Error(), Status: http.StatusInternalServerError}
+		}
+	}
+
+	err = ValidationApplicationStatus(application.Status, request.Status)
+	if err != nil {
+		log.Warn(fmt.Sprintf("ActionLog.ValidationApplicationStatus.error: %s -> %s is not possible", application.Status, request.Status))
+		return &model.ErrorResponse{
+			Code:   fmt.Sprintf("%s.Invalid status change from %s to %s", model.Exception, application.Status, request.Status),
+			Status: http.StatusForbidden,
 		}
 	}
 
 	application.Status = request.Status
 	_, err = s.ApplicationRepo.SaveApplication(application)
 	if err != nil {
-		return err
+		return &model.ErrorResponse{Code: err.Error(), Status: http.StatusInternalServerError}
 	}
 
 	logger.Info("GetApplications.ChangeStatus.end")
-
 	return nil
 }
 
-/*
-enum class Status(private val assignableStatuses: Array<String> = arrayOf()) {
-    RECEIVED(arrayOf("IN_PROGRESS", "HOLD")),
-    IN_PROGRESS(arrayOf("SENT", "HOLD")),
-    SENT(arrayOf()),
-    HOLD(arrayOf("SENT", "IN_PROGRESS"));
-
-    fun canBeChangedTo(status: Status) = this.assignableStatuses.contains(status.name)
-}
-
-*/
-/*
-
-   private fun validateApplicationStatus(applicationStatus: Status, requestStatus: Status) {
-       if (!applicationStatus.canBeChangedTo(requestStatus)) {
-           log.error("ActionLog.validateCardStatus.error {} -> {} is not possible", applicationStatus, requestStatus)
-           throw ApplicationException("INVALID_STATUS_FROM_" + applicationStatus + "_TO_" + requestStatus)
-       }
-   }
-*/
 func ValidationApplicationStatus(applicationStatus model.Status, requestStatus model.Status) error {
 	if !canBeChangeTo(applicationStatus, requestStatus) {
-		log.Error("ActionLog.ValidationApplicationStatus.error: {} -> {} is not possible", applicationStatus, requestStatus)
+		log.Error(fmt.Sprintf("ActionLog.ValidationApplicationStatus.error: %s -> %s is not possible", applicationStatus, requestStatus))
 		return errors.New(fmt.Sprintf("Invalid stattus from %s to %s", applicationStatus, requestStatus))
 	}
 	return nil

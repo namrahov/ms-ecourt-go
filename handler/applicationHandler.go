@@ -190,9 +190,13 @@ func (h *applicationHandler) changeStatus(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = h.Service.ChangeStatus(r.Context(), userId, id, request)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	errorResponse := h.Service.ChangeStatus(r.Context(), userId, id, request)
+	if errorResponse != nil {
+		w.WriteHeader(errorResponse.Status)
+		json.NewEncoder(w).Encode(errorResponse)
 		return
 	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }
