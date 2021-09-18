@@ -20,13 +20,13 @@ type IAdminClient interface {
 type AdminClient struct{}
 
 func (c *AdminClient) GetUserById(id int64) (*model.UserDto, error) {
-	logger.Debug("Get orders by status start")
+	logger.Debug("Get user by id start")
 	endpoint := fmt.Sprintf("%s%s%d", config.Props.AdminClient, "/users/", id)
 	userDto, err := sendGetUserDtoRequest(endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
-	logger.Debug("Get orders by status end")
+	logger.Debug("Get user by id end")
 	return userDto, nil
 }
 
