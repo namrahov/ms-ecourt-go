@@ -118,9 +118,7 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
 	logger.Info("GetApplications.ChangeStatus.start")
 
-	var user *model.UserDto
-	var userDtoErr error
-	user, userDtoErr = s.AdminClient.GetUserById(userId)
+	user, userDtoErr := s.AdminClient.GetUserById(userId)
 	if userDtoErr != nil {
 		log.Error("ActionLog.ChangeStatus.warn while call admin client for userId:", userId)
 		return userDtoErr

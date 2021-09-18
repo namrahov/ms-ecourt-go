@@ -3,33 +3,27 @@ package client
 import (
 	"bytes"
 	"crypto/tls"
-	logger "github.com/sirupsen/logrus"
 	"net/http"
 )
 
-func IsHttpStatusSuccess(statusCode int) bool {
-	return statusCode >= 200 && statusCode < 300
+func isHttpStatus2xx(httpStatusCode int) bool {
+	statusOK := httpStatusCode >= 200 && httpStatusCode < 300
+	return statusOK
 }
 
-func SendRequestToClient(endpoint string, httpMethod string, requestBody []byte) *http.Response {
-	// Disable G402 "TLS InsecureSkipVerify set true". No need to check server certificate for in-cluster service call
-	// #nosec G402
+func sendRequest(httpMethod string, endpoint string, requestBody []byte) (*http.Response, error) {
+
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	request, err := http.NewRequest(httpMethod, endpoint, bytes.NewBuffer(requestBody))
 	if err != nil {
-		logger.Error("ActionLog.SendRequestToClient.error when prepare new request ", err.Error())
-		return nil
+		return nil, err
 	}
 
 	request.Header.Add("content-type", "application/json")
-
-	res, err := http.DefaultClient.Do(request)
-
+	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
-		logger.Error("ActionLog.SendRequestToClient.error when do request ", err.Error())
-		return nil
+		return nil, err
 	}
-
-	return res
+	return resp, nil
 }
