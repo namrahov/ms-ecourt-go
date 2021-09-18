@@ -131,6 +131,15 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 		return &model.ErrorResponse{Code: err.Error(), Status: http.StatusInternalServerError}
 	}
 
+	err = ValidationApplicationStatus(application.Status, request.Status)
+	if err != nil {
+		log.Warn(fmt.Sprintf("ActionLog.ValidationApplicationStatus.error: %s -> %s is not possible", application.Status, request.Status))
+		return &model.ErrorResponse{
+			Code:   fmt.Sprintf("%s.Invalid status change from %s to %s", model.Exception, application.Status, request.Status),
+			Status: http.StatusForbidden,
+		}
+	}
+
 	comment := model.Comment{
 		Commentator:   fmt.Sprintf("%s %s", user.FirstName, user.LastName),
 		Description:   request.Description,
@@ -143,15 +152,6 @@ func (s *Service) ChangeStatus(ctx context.Context, userId int64, id int64, requ
 		if err != nil {
 			logger.Errorf("ActionLog.SaveComment.error: could not save comment details for order %d - %v", application.Id, err)
 			return &model.ErrorResponse{Code: err.Error(), Status: http.StatusInternalServerError}
-		}
-	}
-
-	err = ValidationApplicationStatus(application.Status, request.Status)
-	if err != nil {
-		log.Warn(fmt.Sprintf("ActionLog.ValidationApplicationStatus.error: %s -> %s is not possible", application.Status, request.Status))
-		return &model.ErrorResponse{
-			Code:   fmt.Sprintf("%s.Invalid status change from %s to %s", model.Exception, application.Status, request.Status),
-			Status: http.StatusForbidden,
 		}
 	}
 
