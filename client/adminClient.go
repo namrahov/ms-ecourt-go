@@ -28,29 +28,6 @@ func (c *AdminClient) GetUserById(id int64) (*model.UserDto, error) {
 	}
 	logger.Debug("Get orders by status end")
 	return userDto, nil
-
-	/*endpoint := fmt.Sprintf("%s%s%d", config.Props.AdminClient, "/users/", id)
-	res := SendRequestToClient(endpoint, model.GET, nil)
-
-	if res == nil {
-		return nil, nil
-	}
-
-	if !IsHttpStatusSuccess(res.StatusCode) {
-		log.Error("ActionLog.CheckUserPermission.error when getting data from ms-admin status:", res.StatusCode)
-		return nil, nil
-	}
-
-	var userDto model.UserDto
-
-	errorResponse := util.DecodeJSON(res.Body, &userDto)
-
-	defer res.Body.Close()
-	if errorResponse != nil {
-		return nil, nil
-	}
-
-	return &userDto, nil*/
 }
 
 func (c *AdminClient) CheckUserPermission(dto model.UserPermissionKeyDto) (*model.AdminResponse, *model.ErrorResponse) {
