@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	mid "github.com/go-chi/chi/middleware"
 	"github.com/gorilla/mux"
 	"github.com/namrahov/ms-ecourt-go/client"
@@ -10,7 +9,6 @@ import (
 	"github.com/namrahov/ms-ecourt-go/model"
 	"github.com/namrahov/ms-ecourt-go/service"
 	"github.com/namrahov/ms-ecourt-go/service/permission"
-	"html/template"
 	"net/http"
 )
 
@@ -24,9 +22,7 @@ func DocumentHandler(router *mux.Router) *mux.Router {
 	router.Use(middleware.RequestParamsMiddleware)
 
 	h := &documentHandler{
-		DocumentService: &service.DocumentService{
-			Html2PdfClient: &client.HtmlToPdfClient{},
-		},
+		DocumentService: &service.DocumentService{},
 		PermissionService: &permission.Service{
 			AdminClient: &client.AdminClient{},
 		},
@@ -54,31 +50,24 @@ func (h *documentHandler) generateAct(w http.ResponseWriter, r *http.Request) {
 		return
 	}*/
 
-	tmpl := template.Must(template.ParseFiles("layout.html"))
 	dto := model.TodoPageData{
-		PageTitle: "My TODO list",
+		PageTitle: "My list",
 		Todos: []model.Todo{
 			{Title: "Task 1", Done: false},
 			{Title: "Task 2", Done: true},
 			{Title: "Task 3", Done: true},
 		},
 	}
-	tmpl.Execute(w, dto)
-	//tmpl.Execute(os.Stdout, dto)
 
-	fileInfo, errNew := h.DocumentService.GenerateAct(r.Context(), tmpl, dto)
+	file, errNew := h.DocumentService.GenerateAct(r.Context(), dto)
 	if errNew != nil {
 		http.Error(w, errNew.Error(), http.StatusInternalServerError)
 		return
 	}
-	if fileInfo == nil {
-		http.Error(w, "No photo exists", http.StatusNotFound)
+	if file == nil {
+		http.Error(w, "No pdf exists", http.StatusNotFound)
 		return
 	}
 
-	w.Header().Set("Content-Type", fileInfo.Type)
-	w.Header().Set("Content-Disposition", fileInfo.Name)
-	w.Header().Set("Content-Length", fmt.Sprint(fileInfo.Size))
-	_, _ = w.Write(fileInfo.Content)
-
+	_, _ = w.Write(file)
 }
