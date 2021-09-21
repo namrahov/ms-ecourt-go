@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/namrahov/ms-ecourt-go/config"
-	"github.com/namrahov/ms-ecourt-go/handler"
 	"github.com/namrahov/ms-ecourt-go/model"
 	"github.com/namrahov/ms-ecourt-go/util"
 	logger "github.com/sirupsen/logrus"
@@ -20,12 +19,12 @@ const contentTypeHeader = "Content-type"
 const contentDispositionHeader = "Content-Disposition"
 
 type IHtml2PdfClient interface {
-	GenerateAct(ctx context.Context, tmpl *template.Template, dto handler.TodoPageData) (*model.File, error)
+	ConvertHtmlToPdf(ctx context.Context, tmpl *template.Template, dto model.TodoPageData) (*model.File, error)
 }
 
 type HtmlToPdfClient struct{}
 
-func (f *HtmlToPdfClient) GenerateAct(ctx context.Context, tmpl *template.Template, dto handler.TodoPageData) (*model.File, error) {
+func (f *HtmlToPdfClient) ConvertHtmlToPdf(ctx context.Context, tmpl *template.Template, dto model.TodoPageData) (*model.File, error) {
 	logger.Debug("Generate act start")
 
 	endpoint := fmt.Sprintf("%s%s", config.Props.Html2PdfEndpoint, "/v1/internal/html-2-pdf")

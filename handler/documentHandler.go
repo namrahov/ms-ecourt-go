@@ -7,6 +7,7 @@ import (
 	"github.com/namrahov/ms-ecourt-go/client"
 	"github.com/namrahov/ms-ecourt-go/config"
 	"github.com/namrahov/ms-ecourt-go/middleware"
+	"github.com/namrahov/ms-ecourt-go/model"
 	"github.com/namrahov/ms-ecourt-go/service"
 	"github.com/namrahov/ms-ecourt-go/service/permission"
 	"html/template"
@@ -54,9 +55,9 @@ func (h *documentHandler) generateAct(w http.ResponseWriter, r *http.Request) {
 	}*/
 
 	tmpl := template.Must(template.ParseFiles("layout.html"))
-	dto := TodoPageData{
+	dto := model.TodoPageData{
 		PageTitle: "My TODO list",
-		Todos: []Todo{
+		Todos: []model.Todo{
 			{Title: "Task 1", Done: false},
 			{Title: "Task 2", Done: true},
 			{Title: "Task 3", Done: true},
@@ -80,14 +81,4 @@ func (h *documentHandler) generateAct(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Length", fmt.Sprint(fileInfo.Size))
 	_, _ = w.Write(fileInfo.Content)
 
-}
-
-type Todo struct {
-	Title string
-	Done  bool
-}
-
-type TodoPageData struct {
-	PageTitle string
-	Todos     []Todo
 }
