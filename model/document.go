@@ -46,3 +46,10 @@ type TodoPageData struct {
 	PageTitle string
 	Todos     []Todo
 }
+
+type FileInfo struct {
+	Filename string `json:"filename"`
+	FileID   string `json:"fileId"`
+	Size     int64  `json:"size"`
+	Path     string `json:"path"`
+}

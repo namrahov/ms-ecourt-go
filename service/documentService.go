@@ -19,6 +19,8 @@ type DocumentService struct {
 func (s *DocumentService) GenerateAct(ctx context.Context, tmpl *template.Template, dto model.TodoPageData) (*model.File, error) {
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
 	logger.Info("ActionLog.GetApplication.start")
+	/*data := make(map[string]interface{})
+	data["data"] = dto*/
 
 	file, err := s.Html2PdfClient.ConvertHtmlToPdf(ctx, tmpl, dto)
 	if err != nil {
