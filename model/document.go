@@ -30,13 +30,6 @@ const (
 	SendSuretyInfo                   = "SendSuretyInfo"
 )
 
-type File struct {
-	Content []byte
-	Size    int64
-	Name    string
-	Type    string
-}
-
 type Todo struct {
 	Title string
 	Done  bool
