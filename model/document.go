@@ -29,3 +29,10 @@ const (
 	SendLoanInfo                     = "SendLoanInfo"
 	SendSuretyInfo                   = "SendSuretyInfo"
 )
+
+type File struct {
+	Content []byte
+	Size    int64
+	Name    string
+	Type    string
+}
