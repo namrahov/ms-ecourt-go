@@ -9,7 +9,10 @@ import (
 	"github.com/namrahov/ms-ecourt-go/model"
 	"github.com/namrahov/ms-ecourt-go/service"
 	"github.com/namrahov/ms-ecourt-go/service/permission"
+	"github.com/namrahov/ms-ecourt-go/util"
+	log "github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 )
 
 type documentHandler struct {
@@ -34,7 +37,7 @@ func DocumentHandler(router *mux.Router) *mux.Router {
 }
 
 func (h *documentHandler) generateAct(w http.ResponseWriter, r *http.Request) {
-	/*userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
 
 	if err != nil {
 		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
@@ -48,7 +51,7 @@ func (h *documentHandler) generateAct(w http.ResponseWriter, r *http.Request) {
 		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
 		util.HandleError(w, &model.AccessDeniedError)
 		return
-	}*/
+	}
 
 	dto := model.TodoPageData{
 		PageTitle: "My list",
