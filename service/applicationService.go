@@ -84,28 +84,30 @@ func (s *Service) GetFilterInfo(ctx context.Context) (*model.FilterInfo, error) 
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
 	logger.Info("ActionLog.GetFilterInfo.start")
 
-	applications, err := s.ApplicationRepo.GetApplications()
+	applicationWithDistinctCourtName, err := s.ApplicationRepo.GetDistinctCourtName()
 	if err != nil {
-		logger.Errorf("ActionLog.GetFilterInfo.error: cannot get application info %v", err)
-		return nil, errors.New(fmt.Sprintf("%s.can't-get-application-info", model.Exception))
+		logger.Errorf("ActionLog.GetFilterInfo.error: cannot get applicationWithDistinctCourtName info %v", err)
+		return nil, errors.New(fmt.Sprintf("%s.can't-get-application-with-distinct-court-name", model.Exception))
+	}
+
+	applicationWithDistinctJudgeName, err := s.ApplicationRepo.GetDistinctJudgeName()
+	if err != nil {
+		logger.Errorf("ActionLog.GetFilterInfo.error: cannot get applicationWithDistinctJudgeName info %v", err)
+		return nil, errors.New(fmt.Sprintf("%s.can't-get-application-with-distinct-judge-name", model.Exception))
 	}
 
 	var courts []string
+	for _, application := range *applicationWithDistinctCourtName {
+		if application.CourtName != "" {
+			courts = append(courts, application.CourtName)
+		}
+	}
+
 	var judges []string
-	setCourts := make(map[string]bool)
-	setJudges := make(map[string]bool)
-
-	for _, application := range *applications {
-		setCourts[application.CourtName] = true
-		setJudges[application.JudgeName] = true
-	}
-
-	for k := range setCourts {
-		courts = append(courts, k)
-	}
-
-	for k := range setJudges {
-		judges = append(judges, k)
+	for _, application := range *applicationWithDistinctJudgeName {
+		if application.JudgeName != "" {
+			judges = append(judges, application.JudgeName)
+		}
 	}
 
 	filterInfo := model.FilterInfo{
