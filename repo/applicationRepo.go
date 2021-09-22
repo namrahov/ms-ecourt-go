@@ -11,6 +11,8 @@ type IApplicationRepo interface {
 	GetApplicationById(id int64) (*model.Application, error)
 	GetApplications() (*[]model.Application, error)
 	SaveApplication(application *model.Application) (*model.Application, error)
+	GetDistinctCourtName() (*[]model.Application, error)
+	GetDistinctJudgeName() (*[]model.Application, error)
 }
 
 type ApplicationRepo struct {
@@ -69,6 +71,30 @@ func (r ApplicationRepo) GetApplications() (*[]model.Application, error) {
 		log.Fatal(err)
 	}
 
+	return &applications, nil
+}
+
+func (r ApplicationRepo) GetDistinctCourtName() (*[]model.Application, error) {
+	var applications []model.Application
+	err := Db.Model(&applications).
+		ColumnExpr("DISTINCT court_name").
+		Column("application.court_name").
+		Select()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &applications, nil
+}
+
+func (r ApplicationRepo) GetDistinctJudgeName() (*[]model.Application, error) {
+	var applications []model.Application
+	err := Db.Model(&applications).
+		ColumnExpr("DISTINCT judge_name").
+		Column("application.judge_name").
+		Select()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return &applications, nil
 }
 
