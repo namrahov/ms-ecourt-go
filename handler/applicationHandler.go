@@ -134,7 +134,7 @@ func (h *applicationHandler) getApplication(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *applicationHandler) getFilterInfo(w http.ResponseWriter, r *http.Request) {
-	/*userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
 
 	if err != nil {
 		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
@@ -148,7 +148,7 @@ func (h *applicationHandler) getFilterInfo(w http.ResponseWriter, r *http.Reques
 		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
 		util.HandleError(w, &model.AccessDeniedError)
 		return
-	}*/
+	}
 
 	result, err := h.Service.GetFilterInfo(r.Context())
 	if err != nil {
