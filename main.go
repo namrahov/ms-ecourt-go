@@ -34,6 +34,7 @@ func main() {
 	router := mux.NewRouter()
 	handler.HandleHealthRequest(router)
 	handler.ApplicationHandler(router)
+	handler.DocumentHandler(router)
 
 	log.Info("Starting server at port: ", config.Props.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Props.Port, router))
