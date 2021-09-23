@@ -76,3 +76,9 @@ type ChangeStatusRequest struct {
 	Status      Status `json:"status"`
 	Description string `json:"description"`
 }
+
+type LightApplicationDto struct {
+	Id        int64  `json:"id"`
+	CourtName string `json:"courtName"`
+	JudgeName string `json:"judgeName"`
+}
