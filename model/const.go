@@ -32,4 +32,9 @@ const (
 	AttachmentFilename          = "attachment; filename=loan_risks_report.xlsx"
 )
 
+const (
+	FirstSheet  = "Sheet1"
+	SecondSheet = "Sheet2"
+)
+
 const Exception = "error.ecourt"

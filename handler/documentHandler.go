@@ -37,6 +37,7 @@ func DocumentHandler(router *mux.Router) *mux.Router {
 
 	router.HandleFunc(config.RootPath+"/documents/generate-act", h.generateAct).Methods("POST")
 	router.HandleFunc(config.RootPath+"/documents/get-report", h.getReport).Methods("GET")
+	router.HandleFunc(config.RootPath+"/documents/upload", h.uploadExcel).Methods("POST")
 
 	return router
 }
@@ -81,7 +82,7 @@ func (h *documentHandler) generateAct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *documentHandler) getReport(w http.ResponseWriter, r *http.Request) {
-	/*userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
 
 	if err != nil {
 		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
@@ -95,7 +96,7 @@ func (h *documentHandler) getReport(w http.ResponseWriter, r *http.Request) {
 		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
 		util.HandleError(w, &model.AccessDeniedError)
 		return
-	}*/
+	}
 
 	file := new(excelize.File)
 
@@ -113,4 +114,45 @@ func (h *documentHandler) getReport(w http.ResponseWriter, r *http.Request) {
 	if fileErr != nil {
 		log.Error("ActionLog.WriteExcelHeaders.error happened when write excel file")
 	}
+}
+
+func (h *documentHandler) uploadExcel(w http.ResponseWriter, r *http.Request) {
+	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+
+	if err != nil {
+		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
+		util.HandleError(w, &model.InvalidHeaderError)
+		return
+	}
+
+	hasPermission := h.PermissionService.HasPermission(userId, model.GenerateReportPermissionKey)
+
+	if !hasPermission {
+		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
+		util.HandleError(w, &model.AccessDeniedError)
+		return
+	}
+
+	xlsx, meta, e := r.FormFile("file")
+	if e != nil {
+		log.Error("ActionLog.uploadExcel.error can't read file ", e.Error())
+		return
+	}
+
+	const maxUploadSize = 25 * 1024
+	if meta != nil {
+		if meta.Size > maxUploadSize {
+			log.Error("ActionLog.uploadExcel.error file size so much ", meta.Size)
+			return
+		}
+	}
+
+	erro := h.DocumentService.UploadExcel(r.Context(), xlsx)
+	if erro != nil {
+		http.Error(w, erro.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "multipart/form-data")
+	w.WriteHeader(204)
 }
