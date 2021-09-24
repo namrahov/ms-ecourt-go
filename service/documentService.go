@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/360EntSecGroup-Skylar/excelize"
 	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/namrahov/ms-ecourt-go/mapper"
@@ -10,12 +11,14 @@ import (
 	"github.com/namrahov/ms-ecourt-go/repo"
 	log "github.com/sirupsen/logrus"
 	"html/template"
+	"mime/multipart"
 	"strconv"
 )
 
 type IDocumentService interface {
 	GenerateAct(ctx context.Context, dto model.TodoPageData) ([]byte, error)
 	GenerateReportOfLightApplication(ctx context.Context) (*excelize.File, error)
+	UploadExcel(ctx context.Context, xlsx multipart.File) error
 }
 
 type DocumentService struct {
@@ -89,4 +92,32 @@ func (s *DocumentService) GenerateReportOfLightApplication(ctx context.Context) 
 
 	logger.Info("ActionLog.GenerateReportOfLightApplication.END")
 	return file, nil
+}
+
+func (s *DocumentService) UploadExcel(ctx context.Context, xlsx multipart.File) error {
+	logger := ctx.Value(model.ContextLogger).(*log.Entry)
+	logger.Info("ActionLog.UploadExcel.start")
+
+	file, err := excelize.OpenReader(xlsx)
+	if err != nil {
+		log.Error("ActionLog.UploadExcel.response can't open file ", err.Error())
+		return err
+	}
+
+	rows := file.GetRows(model.FirstSheet)
+	var lights []model.LightApplicationDto
+	for k := 1; k < 3; k++ {
+		var light model.LightApplicationDto
+
+		light.Id, err = strconv.ParseInt(rows[k][0], 10, 64)
+		light.CourtName = rows[k][1]
+		light.JudgeName = rows[k][2]
+
+		lights = append(lights, light)
+	}
+
+	fmt.Println("dto=", lights)
+
+	logger.Info("ActionLog.UploadExcel.end")
+	return nil
 }
