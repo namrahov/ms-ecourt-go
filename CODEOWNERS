@@ -1,0 +1,6 @@
+*               @PB-Digital/squad-cost-saving
+CODEOWNERS      @PB-Digital/infra-admins
+.circleci/      @PB-Digital/infra-admins
+Jenkinsfile     @PB-Digital/infra-admins
+infra/          @PB-Digital/infra-admins
+Dockerfile      @PB-Digital/infra-admins
