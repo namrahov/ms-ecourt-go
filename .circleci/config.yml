@@ -1,0 +1,17 @@
+version: 2.1
+
+orbs:
+  golang: pb-digital/golang@1
+
+workflows:
+  ms-ecourt-go_workflow:
+    jobs:
+      - golang/validate_code:
+          context: BUILD
+      - golang/gosec_scan:
+          context: BUILD
+      - golang/gosec_send:
+          context: AWS_TEST
+          filters:
+            branches:
+              only: develop
