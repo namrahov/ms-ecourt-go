@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  golang: pb-digital/golang@1
+  golang: golang@1
 
 workflows:
   ms-ecourt-go_workflow:
