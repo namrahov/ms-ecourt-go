@@ -1,21 +1,487 @@
-jobs:
-  build:
-    executor:
-      name: go/default
-      tag: '1.16'
-    steps:
-      - checkout
-      - go/load-cache
-      - go/mod-download
-      - go/save-cache
-      - go/test:
-          covermode: atomic
-          failfast: true
-          race: true
-orbs:
-  go: circleci/go@x.y
-version: 2.1
-workflows:
-  main:
-    jobs:
-      - build
+
+  2
+    3
+    4
+    5
+    6
+    7
+    8
+    9
+    10
+    11
+    12
+    13
+    14
+    15
+    16
+    17
+    18
+    19
+    20
+    21
+    22
+    23
+    24
+    25
+    26
+    27
+    28
+    29
+    30
+    31
+    32
+    33
+    34
+    35
+    36
+    37
+    38
+    39
+    40
+    41
+    42
+    43
+    44
+    45
+    46
+    47
+    48
+    49
+    50
+    51
+    52
+    53
+    54
+    55
+    56
+    57
+    58
+    59
+    60
+    61
+    62
+    63
+    64
+    65
+    66
+    67
+    68
+    69
+    70
+    71
+    72
+    73
+    74
+    75
+    76
+    77
+    78
+    79
+    80
+    81
+    82
+    83
+    84
+    85
+    86
+    87
+    88
+    89
+    90
+    91
+    92
+    93
+    94
+    95
+    96
+    97
+    98
+    99
+    100
+    101
+    102
+    103
+    104
+    105
+    106
+    107
+    108
+    109
+    110
+    111
+    112
+    113
+    114
+    115
+    116
+    117
+    118
+    119
+    120
+    121
+    122
+    123
+    124
+    125
+    126
+    127
+    128
+    129
+    130
+    131
+    132
+    133
+    134
+    135
+    136
+    137
+    138
+    139
+    140
+    141
+    142
+    143
+    144
+    145
+    146
+    147
+    148
+    149
+    150
+    151
+    152
+    153
+    154
+    155
+    156
+    157
+    158
+    159
+    160
+    161
+    162
+    163
+    164
+    165
+    166
+    167
+    168
+    169
+    170
+    171
+    172
+    173
+    174
+    175
+    176
+    177
+    178
+    179
+    180
+    181
+    182
+    183
+    184
+    185
+    186
+    187
+    188
+    189
+    190
+    191
+    192
+    193
+    194
+    195
+    196
+    197
+    198
+    199
+    200
+    201
+    202
+    203
+    204
+    205
+    206
+    207
+    208
+    209
+    210
+    211
+    212
+    213
+    214
+    215
+    216
+    217
+    218
+    219
+    220
+    221
+    222
+    223
+    224
+    225
+    226
+    227
+    228
+    229
+    230
+    231
+    232
+    233
+    234
+    235
+    236
+    237
+    238
+    239
+    240
+    241
+    242
+    243
+    244
+  # This code is licensed from CircleCI to the user under the MIT license.
+  # See here for details: https://circleci.com/developer/orbs/licensing
+  commands:
+    install:
+      description: |
+        Install Go in a build. Supports Linux/amd64 and macOS/amd64.
+      parameters:
+        cache:
+          default: true
+          description: Whether or not to cache the binary.
+          type: boolean
+        cache-key:
+          default: v2
+          description: |
+            String to use in cache key. Typically overriden when needed to bust cache.
+          type: string
+        version:
+          default: 1.16.5
+          description: The Go version.
+          type: string
+      steps:
+        - os-detect/init
+        - when:
+            condition:
+              equal:
+                - <<parameters.cache>>
+                - true
+            steps:
+              - run:
+                  command: |
+                    $SUDO rm -rf /usr/local/go
+                    $SUDO mkdir -p /usr/local/go
+                    $SUDO chown -R $(whoami): /usr/local/go
+                  name: Prep cache restore
+              - restore_cache:
+                  keys:
+                    - go-binary-<<parameters.cache-key>>-<<parameters.version>>-{{ arch }}
+        - run:
+            command: |
+              : ${OSD_FAMILY:="linux"}
+              : ${HOSTTYPE:="amd64"}
+              if [ "${HOSTTYPE}" = "x86_64" ]; then HOSTTYPE="amd64"; fi
+              case "${HOSTTYPE}" in *86 ) HOSTTYPE=i386 ;; esac
+
+              if command -v go >/dev/null; then
+                if go version | grep -q -F "go<< parameters.version >> "; then
+                  echo "Binary already exists, skipping download."
+                  exit 0
+                fi
+
+                echo "Found a different version of Go."
+                OSD_FAMILY="$(go env GOHOSTOS)"
+                HOSTTYPE="$(go env GOHOSTARCH)"
+
+                $SUDO rm -rf /usr/local/go
+                $SUDO install --owner=${USER} -d /usr/local/go
+              fi
+
+              echo "Installing the requested version of Go."
+
+              curl --fail --location -sS "https://dl.google.com/go/go<< parameters.version >>.${OSD_FAMILY}-${HOSTTYPE}.tar.gz" \
+              | sudo tar --no-same-owner --strip-components=1 --gunzip -x -C /usr/local/go/
+
+              echo "export PATH=$PATH:/usr/local/go/bin" >> $BASH_ENV
+              $SUDO chown -R $(whoami): /usr/local/go
+            name: Install Go
+        - run:
+            command: echo "Installed " && go version
+            name: Verify Go Installation
+        - when:
+            condition:
+              equal:
+                - <<parameters.cache>>
+                - true
+            steps:
+              - save_cache:
+                  key: go-binary-<<parameters.cache-key>>-<<parameters.version>>-{{ arch }}
+                  paths:
+                    - /usr/local/go
+    load-cache:
+      description: Load cached Go modules.
+      parameters:
+        key:
+          default: go-mod
+          description: The cache key to use. The key is immutable.
+          type: string
+      steps:
+        - restore_cache:
+            keys:
+              - << parameters.key >>-{{ arch }}-{{ checksum "go.sum"  }}
+    mod-download:
+      description: Run 'go mod download'.
+      steps:
+        - run:
+            command: go mod download
+            name: go mod download
+    mod-download-cached:
+      description: Download and cache Go modules
+      steps:
+        - load-cache
+        - mod-download
+        - save-cache
+    save-cache:
+      description: Save Go modules to cache.
+      parameters:
+        key:
+          default: go-mod
+          description: The cache key to use. The key is immutable.
+          type: string
+        path:
+          default: /home/circleci/go/pkg/mod
+          description: Path to cache.
+          type: string
+      steps:
+        - save_cache:
+            key: << parameters.key >>-{{ arch }}-{{ checksum "go.sum"  }}
+            paths:
+              - << parameters.path >>
+    test:
+      description: |
+        Runs 'go test ./...' but includes extensive parameterization for finer tuning
+      parameters:
+        count:
+          default: "1"
+          description: run each test and benchmark n times
+          type: string
+        covermode:
+          default: set
+          description: |
+            flag to set the coverage mode
+            (the go default is: "set", unless -race is enabled, in which case the go default is "atomic")
+          enum:
+            - set
+            - count
+            - atomic
+          type: enum
+        coverpkg:
+          default: ./...
+          description: |
+            Apply coverage analysis in each test to packages matching the patterns.
+            (Sets -cover.)
+          type: string
+        coverprofile:
+          default: cover-source.out
+          description: file to save coverage profile
+          type: string
+        failfast:
+          default: false
+          description: do not start new tests after the first test failure
+          type: boolean
+        packages:
+          default: ./...
+          description: Import tests to run, by path glob.
+          type: string
+        parallel:
+          default: "1"
+          description: |
+            Allow parallel execution of test functions that call t.Parallel.
+            The value of this flag is the maximum number of tests to run
+            simultaneously
+          type: string
+        race:
+          default: false
+          description: |
+            run tests with -race option
+            (if enabled, update covermode to be "atomic")
+          type: boolean
+        short:
+          default: false
+          description: tell long-running tests to shorten their run time
+          type: boolean
+        verbose:
+          default: false
+          description: log all tests as they are run. Also print all text from Log and Logf calls even if the test succeeds.
+          type: boolean
+      steps:
+        - run:
+            command: go test <<# parameters.race >>-race<</ parameters.race >> -count=<<parameters.count>> -coverprofile=<<parameters.coverprofile>> <<# parameters.failfast >>-failfast<</ parameters.failfast >> <<# parameters.short >>-short<</ parameters.short >> -p <<parameters.parallel>> -covermode=<<parameters.covermode>> <<# parameters.verbose >>-v<</ parameters.verbose >> <<parameters.packages>> -coverpkg=<<parameters.coverpkg>>
+            name: go test
+  description: |
+    Common CircleCI tasks for the Go ( Golang ) programming language.
+  display:
+    home_url: https://golang.org/
+    source_url: https://github.com/CircleCI-Public/go-orb
+  examples:
+    go-modules-cache:
+      description: Speeding up builds with the Go modules cache on CircleCI.
+      usage:
+        jobs:
+          build:
+            executor:
+              name: go/default
+              tag: "1.16"
+            steps:
+              - checkout
+              - go/load-cache
+              - go/mod-download
+              - go/save-cache
+        orbs:
+          go: circleci/go@x.y
+        version: 2.1
+        workflows:
+          main:
+            jobs:
+              - build
+    test:
+      description: Run go test ./... with additional (optional) parameters
+      usage:
+        jobs:
+          build:
+            executor:
+              name: go/default
+              tag: "1.16"
+            steps:
+              - checkout
+              - go/load-cache
+              - go/mod-download
+              - go/save-cache
+              - go/test:
+                  covermode: atomic
+                  failfast: true
+                  race: true
+        orbs:
+          go: circleci/go@x.y
+        version: 2.1
+        workflows:
+          main:
+            jobs:
+              - build
+  executors:
+    default:
+      description: |
+        "The official CircleCI Go Docker image on Docker Hub.
+        Found here: https://hub.docker.com/r/cimg/go"
+      docker:
+        - image: cimg/go:<< parameters.tag >>
+      parameters:
+        tag:
+          description: The `cimg/go` Docker image version tag.
+          type: string
+  orbs:
+    os-detect: circleci/os-detect@0.2
+  version: 2.1
