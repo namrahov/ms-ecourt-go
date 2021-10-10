@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  golang: golang@1
+  go: circleci/go@1.7.0
 
 workflows:
   ms-ecourt-go_workflow:
