@@ -1,10 +1,10 @@
 version: 2.1
 
 orbs:
-  golang: namrahov/golang@1
+  golang: pb-digital/golang@1
 
 workflows:
-  ms-ecourt-go_workflow:
+  ms-retail-loan-risk-report_workflow:
     jobs:
       - golang/validate_code:
           context: BUILD
