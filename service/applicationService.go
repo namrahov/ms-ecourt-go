@@ -24,6 +24,7 @@ type Service struct {
 	CommentRepo     repo.ICommentRepo
 	AdminClient     client.IAdminClient
 	ValidationUtil  util.IValidationUtil
+	DocumentClient  client.IDocumentClient
 }
 
 func (s *Service) GetApplications(ctx context.Context, page int, count int, applicationCriteria model.ApplicationCriteria) (*model.PageableApplicationDto, error) {
@@ -68,6 +69,13 @@ func (s *Service) GetApplications(ctx context.Context, page int, count int, appl
 func (s *Service) GetApplication(ctx context.Context, id int64) (*model.Application, error) {
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
 	logger.Info("ActionLog.GetApplication.start")
+
+	documentDto, err := s.DocumentClient.GetDocument(ctx, 1)
+	if err != nil {
+		logger.Warn("ActionLog.GetOrderById.error : can't get order delivery details")
+	}
+
+	fmt.Println("documentDto", documentDto)
 
 	application, err := s.ApplicationRepo.GetApplicationById(id)
 	if err != nil {

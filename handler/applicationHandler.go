@@ -32,6 +32,7 @@ func ApplicationHandler(router *mux.Router) *mux.Router {
 			CommentRepo:     &repo.CommentRepo{},
 			AdminClient:     &client.AdminClient{},
 			ValidationUtil:  &util.ValidationUtil{},
+			DocumentClient:  &client.DocumentClient{},
 		},
 		PermissionService: &permission.Service{
 			AdminClient: &client.AdminClient{},
@@ -99,7 +100,7 @@ func (h *applicationHandler) getApplications(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *applicationHandler) getApplication(w http.ResponseWriter, r *http.Request) {
-	userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
+	/*userId, err := strconv.ParseInt(r.Header.Get(model.UserIdHeader), 10, 64)
 
 	if err != nil {
 		log.Error("ActionLog.generateReport.error happened when get user id from header ", err)
@@ -113,7 +114,7 @@ func (h *applicationHandler) getApplication(w http.ResponseWriter, r *http.Reque
 		log.Error("ActionLog.generateReport.error access is denied for userId:", userId)
 		util.HandleError(w, &model.AccessDeniedError)
 		return
-	}
+	}*/
 
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
