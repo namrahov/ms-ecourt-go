@@ -40,7 +40,7 @@ func ApplicationHandler(router *mux.Router) *mux.Router {
 
 	router.HandleFunc(config.RootPath+"/applications", h.getApplications).Methods("GET")
 	router.HandleFunc(config.RootPath+"/applications/{id}", h.getApplication).Methods("GET")
-	router.HandleFunc(config.RootPath+"/applications/get/filter-info", h.getFilterInfo).Methods("GET")
+	router.HandleFunc(config.RootPath+"/applications/get/filter-infooo", h.getFilterInfo).Methods("GET")
 	router.HandleFunc(config.RootPath+"/applications/{id}/change-statusss", h.changeStatus).Methods("GET")
 
 	return router
