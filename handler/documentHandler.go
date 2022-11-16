@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"crypto/sha1"
+	"fmt"
 	"github.com/360EntSecGroup-Skylar/excelize"
 	mid "github.com/go-chi/chi/middleware"
 	"github.com/gorilla/mux"
@@ -13,8 +15,12 @@ import (
 	"github.com/namrahov/ms-ecourt-go/service/permission"
 	"github.com/namrahov/ms-ecourt-go/util"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 type documentHandler struct {
@@ -38,6 +44,7 @@ func DocumentHandler(router *mux.Router) *mux.Router {
 	router.HandleFunc(config.RootPath+"/documents/generate-act", h.generateAct).Methods("POST")
 	router.HandleFunc(config.RootPath+"/documents/get-report", h.getReport).Methods("GET")
 	router.HandleFunc(config.RootPath+"/documents/upload", h.uploadExcel).Methods("POST")
+	router.HandleFunc(config.RootPath+"/documents/upload-file", h.uploadFile).Methods("POST")
 
 	return router
 }
@@ -155,4 +162,46 @@ func (h *documentHandler) uploadExcel(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", "multipart/form-data")
 	w.WriteHeader(204)
+}
+
+func (h *documentHandler) uploadFile(w http.ResponseWriter, req *http.Request) {
+	mf, fh, err := req.FormFile("nf")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer mf.Close()
+
+	// crate sha for file name
+	ext := strings.Split(fh.Filename, ".")[1]
+
+	hs := sha1.New()
+
+	io.Copy(hs, mf)
+
+	fName := fmt.Sprintf("%x", hs.Sum(nil)) + "." + ext
+
+	//create new file
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+	}
+	path := filepath.Join(wd, "public", fName)
+
+	nf, err := os.Create(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer nf.Close()
+	//copy
+
+	seek, err := mf.Seek(0, 0)
+	if err != nil {
+		fmt.Println(seek, "  ", err)
+		return
+	}
+
+	io.Copy(nf, mf)
+
 }

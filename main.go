@@ -6,10 +6,10 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/namrahov/ms-ecourt-go/config"
 	"github.com/namrahov/ms-ecourt-go/handler"
+	"net/http"
 
 	"github.com/namrahov/ms-ecourt-go/repo"
 	log "github.com/sirupsen/logrus"
-	"net/http"
 )
 
 var opts struct {
