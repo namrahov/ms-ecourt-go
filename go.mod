@@ -20,6 +20,8 @@ require (
 	github.com/prometheus/common v0.26.0
 	github.com/sirupsen/logrus v1.9.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	google.golang.org/grpc v1.50.1
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	mellium.im/sasl v0.2.1 // indirect
 )
