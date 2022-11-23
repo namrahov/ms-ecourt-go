@@ -3,6 +3,8 @@ package repo
 import (
 	"github.com/namrahov/ms-ecourt-go/model"
 	log "github.com/sirupsen/logrus"
+	"sync"
+	"time"
 )
 
 type IApplicationRepo interface {
@@ -11,8 +13,8 @@ type IApplicationRepo interface {
 	GetApplicationById(id int64) (*model.Application, error)
 	GetApplications() (*[]model.Application, error)
 	SaveApplication(application *model.Application) (*model.Application, error)
-	GetDistinctCourtName() (*[]model.Application, error)
-	GetDistinctJudgeName() (*[]model.Application, error)
+	GetDistinctCourtName(wg *sync.WaitGroup) (*[]model.Application, error)
+	GetDistinctJudgeName(wg *sync.WaitGroup) (*[]model.Application, error)
 }
 
 type ApplicationRepo struct {
@@ -74,7 +76,7 @@ func (r ApplicationRepo) GetApplications() (*[]model.Application, error) {
 	return &applications, nil
 }
 
-func (r ApplicationRepo) GetDistinctCourtName() (*[]model.Application, error) {
+func (r ApplicationRepo) GetDistinctCourtName(wg *sync.WaitGroup) (*[]model.Application, error) {
 	var applications []model.Application
 	err := Db.Model(&applications).
 		ColumnExpr("DISTINCT court_name").
@@ -83,10 +85,12 @@ func (r ApplicationRepo) GetDistinctCourtName() (*[]model.Application, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	time.Sleep(3 * time.Second)
+	wg.Done()
 	return &applications, nil
 }
 
-func (r ApplicationRepo) GetDistinctJudgeName() (*[]model.Application, error) {
+func (r ApplicationRepo) GetDistinctJudgeName(wg *sync.WaitGroup) (*[]model.Application, error) {
 	var applications []model.Application
 	err := Db.Model(&applications).
 		ColumnExpr("DISTINCT judge_name").
@@ -95,6 +99,8 @@ func (r ApplicationRepo) GetDistinctJudgeName() (*[]model.Application, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	time.Sleep(3 * time.Second)
+	wg.Done()
 	return &applications, nil
 }
 

@@ -10,6 +10,8 @@ import (
 	"github.com/namrahov/ms-ecourt-go/util"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"sync"
+	"time"
 )
 
 type IService interface {
@@ -81,34 +83,50 @@ func (s *Service) GetApplication(ctx context.Context, id int64) (*model.Applicat
 }
 
 func (s *Service) GetFilterInfo(ctx context.Context) (*model.FilterInfo, error) {
+	stratTime := time.Now()
+
 	logger := ctx.Value(model.ContextLogger).(*log.Entry)
 	logger.Info("ActionLog.GetFilterInfo.start")
 
-	applicationWithDistinctCourtName, err := s.ApplicationRepo.GetDistinctCourtName()
+	var applicationWithDistinctCourtName *[]model.Application
+	var applicationWithDistinctJudgeName *[]model.Application
+	var err error
+
+	var courts []string
+	var judges []string
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		applicationWithDistinctCourtName, err = s.ApplicationRepo.GetDistinctCourtName(&wg)
+		for _, application := range *applicationWithDistinctCourtName {
+			if application.CourtName != "" {
+				courts = append(courts, application.CourtName)
+			}
+		}
+	}()
+
 	if err != nil {
 		logger.Errorf("ActionLog.GetFilterInfo.error: cannot get applicationWithDistinctCourtName info %v", err)
 		return nil, errors.New(fmt.Sprintf("%s.can't-get-application-with-distinct-court-name", model.Exception))
 	}
 
-	applicationWithDistinctJudgeName, err := s.ApplicationRepo.GetDistinctJudgeName()
+	go func() {
+		applicationWithDistinctJudgeName, err = s.ApplicationRepo.GetDistinctJudgeName(&wg)
+		for _, application := range *applicationWithDistinctJudgeName {
+			if application.JudgeName != "" {
+				judges = append(judges, application.JudgeName)
+			}
+		}
+	}()
+
 	if err != nil {
 		logger.Errorf("ActionLog.GetFilterInfo.error: cannot get applicationWithDistinctJudgeName info %v", err)
 		return nil, errors.New(fmt.Sprintf("%s.can't-get-application-with-distinct-judge-name", model.Exception))
 	}
 
-	var courts []string
-	for _, application := range *applicationWithDistinctCourtName {
-		if application.CourtName != "" {
-			courts = append(courts, application.CourtName)
-		}
-	}
-
-	var judges []string
-	for _, application := range *applicationWithDistinctJudgeName {
-		if application.JudgeName != "" {
-			judges = append(judges, application.JudgeName)
-		}
-	}
+	wg.Wait()
 
 	filterInfo := model.FilterInfo{
 		Courts: courts,
@@ -116,6 +134,9 @@ func (s *Service) GetFilterInfo(ctx context.Context) (*model.FilterInfo, error) 
 	}
 
 	logger.Info("ActionLog.GetFilterInfo.success")
+
+	fmt.Println(time.Now().Sub(stratTime))
+
 	return &filterInfo, nil
 }
 
